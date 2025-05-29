@@ -1,5 +1,5 @@
 name: Simple_Factions
-version: '2.1'
+version: '2.1.2'
 main: me.entropire.simple_factions.Simple_Factions
 api-version: '1.20'
 authors: [Entropire]
