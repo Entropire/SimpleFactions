@@ -8,7 +8,7 @@
 
 ---
 > [!WARNING]
-> This plugin is still in developemt. If you find a bug or feature that can be impoved you can open a issue for it.
+> This plugin plugin is depricated
 
 > [!NOTE]
 > This project includes code from AnvilGUI, © WesJD, licensed under the MIT License.
