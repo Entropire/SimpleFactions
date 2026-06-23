@@ -1,0 +1,6 @@
+name: SimpleFactions
+version: '${version}'
+
+main: com.entropire.simplefactions.SimpleFactions
+api-version: '26.1.1'
+load: POSTWORLD
