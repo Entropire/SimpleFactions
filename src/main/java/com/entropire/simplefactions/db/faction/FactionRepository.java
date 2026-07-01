@@ -17,7 +17,7 @@ public class FactionRepository {
     }
 
     public void save(Faction faction) throws FactionException {
-        try (PreparedStatement preparedStatement = db.getConnection().prepareStatement("INSERT INTO Factions (uuid, name, color, owner_uuid) VALUES (?, ?, ?, ?)")) {
+        try (PreparedStatement preparedStatement = db.getConnection().prepareStatement("INSERT INTO factions (uuid, name, color, owner_uuid) VALUES (?, ?, ?, ?)")) {
             preparedStatement.setString(1, (faction.uuid() == null ? UUID.randomUUID().toString() : faction.uuid().toString()) );
             preparedStatement.setString(2, faction.name());
             preparedStatement.setString(3, faction.color());

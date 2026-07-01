@@ -14,7 +14,7 @@ public class PlayerRepository {
     }
 
     public void save(Player player) throws PlayerException {
-        try (PreparedStatement preparedStatement = db.getConnection().prepareStatement("INSERT INTO Factions (uuid, username) VALUES (?, ?)")) {
+        try (PreparedStatement preparedStatement = db.getConnection().prepareStatement("INSERT INTO players (uuid, username) VALUES (?, ?)")) {
             preparedStatement.setString(1, player.uuid().toString());
             preparedStatement.setString(2, player.username());
             preparedStatement.execute();
