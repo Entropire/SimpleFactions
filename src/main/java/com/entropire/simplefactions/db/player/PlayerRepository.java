@@ -7,7 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class PlayerRepository {
-    private DataBaseContext db;
+    private final DataBaseContext db;
 
     public PlayerRepository(DataBaseContext db) {
         this.db = db;

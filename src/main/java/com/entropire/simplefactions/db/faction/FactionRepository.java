@@ -10,7 +10,7 @@ import java.sql.SQLException;
 import java.util.UUID;
 
 public class FactionRepository {
-    private DataBaseContext db;
+    private final DataBaseContext db;
 
     public FactionRepository(DataBaseContext db) {
         this.db = db;

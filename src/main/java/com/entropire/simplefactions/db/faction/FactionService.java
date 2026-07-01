@@ -3,7 +3,7 @@ package com.entropire.simplefactions.db.faction;
 import com.entropire.simplefactions.db.faction.exception.FactionException;
 
 public class FactionService {
-    private FactionRepository repository;
+    private final FactionRepository repository;
 
     public FactionService(FactionRepository repository) {
         this.repository = repository;

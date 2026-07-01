@@ -3,7 +3,7 @@ package com.entropire.simplefactions.db.player;
 import com.entropire.simplefactions.db.player.exception.PlayerException;
 
 public class PlayerService {
-    private PlayerRepository repository;
+    private final PlayerRepository repository;
 
     public PlayerService(PlayerRepository repository) {
         this.repository = repository;
