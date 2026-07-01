@@ -1,5 +1,6 @@
 package com.entropire.simplefactions;
 
+import com.entropire.simplefactions.command.SimpleFactionCommand;
 import com.entropire.simplefactions.database.DataBaseContext;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -12,6 +13,9 @@ public final class SimpleFactions extends JavaPlugin {
     @Override
     public void onEnable() {
         logger = getLogger();
+
+        getCommand("simplefactions").setExecutor(new SimpleFactionCommand());
+        getCommand("simplefactions").setTabCompleter(new SimpleFactionCommand());
 
         if (!getDataFolder().exists()) getDataFolder().mkdir();
         db = new DataBaseContext(getDataFolder().getAbsolutePath() + "/Simple-Faction.db");
