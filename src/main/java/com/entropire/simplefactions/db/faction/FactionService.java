@@ -1,0 +1,15 @@
+package com.entropire.simplefactions.db.faction;
+
+import com.entropire.simplefactions.db.faction.exception.FactionException;
+
+public class FactionService {
+    private FactionRepository repository;
+
+    public FactionService(FactionRepository repository) {
+        this.repository = repository;
+    }
+
+    public void save(Faction faction) throws FactionException {
+        repository.save(faction);
+    }
+}

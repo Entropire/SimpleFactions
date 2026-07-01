@@ -1,6 +1,6 @@
 package com.entropire.simplefactions.db;
 
-import org.bukkit.Bukkit;
+import com.entropire.simplefactions.SimpleFactions;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -30,7 +30,7 @@ public class DataBaseContext {
         try {
             return DriverManager.getConnection("jdbc:sqlite:" + path);
         } catch (SQLException e) {
-            Bukkit.getLogger().severe("Failed to connect to database: " + e.getMessage());
+            SimpleFactions.getPluginLogger().severe("Failed to connect to database: " + e.getMessage());
             throw new IllegalStateException("Database connection failed", e);
         }
     }
@@ -41,7 +41,7 @@ public class DataBaseContext {
                 connection.close();
             }
         } catch (SQLException e) {
-            Bukkit.getLogger().severe("Failed to close database: " + e.getMessage());
+            SimpleFactions.getPluginLogger().severe("Failed to close database: " + e.getMessage());
         }
     }
 
@@ -58,7 +58,7 @@ public class DataBaseContext {
             }
 
         } catch (SQLException e) {
-            Bukkit.getLogger().severe("Failed to initialize schema: " + e.getMessage());
+            SimpleFactions.getPluginLogger().severe("Failed to initialize schema: " + e.getMessage());
         }
     }
 
