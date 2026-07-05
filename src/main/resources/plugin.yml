@@ -8,4 +8,4 @@ load: POSTWORLD
 commands:
   simplefactions:
     usage: "/simplefactions"
-    aliases: [sp]
+    aliases: [sf]

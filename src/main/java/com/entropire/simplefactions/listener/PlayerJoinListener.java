@@ -28,9 +28,8 @@ public class PlayerJoinListener implements Listener {
         db.withConnection(conn -> {
             playerService.saveIfNotExists(conn, new Player(player.getUniqueId(), player.getName(), ChatMode.PUBLIC, Instant.now()));
             playerService.updatePlayerLastSeen(conn, player.getUniqueId(), Instant.now());
+            return null;
         });
-
-
     }
 
     @EventHandler
@@ -38,6 +37,7 @@ public class PlayerJoinListener implements Listener {
         org.bukkit.entity.Player player = (org.bukkit.entity.Player) event.getPlayer();
         db.withConnection(conn -> {
             playerService.updatePlayerLastSeen(conn, player.getUniqueId(), Instant.now());
+            return null;
         });
     }
 }

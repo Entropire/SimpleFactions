@@ -13,6 +13,7 @@ import com.entropire.simplefactions.faction.exception.FactionOwnerDuplicateExcep
 import com.entropire.simplefactions.faction.membership.FactionMembership;
 import com.entropire.simplefactions.faction.membership.FactionMembershipService;
 import com.entropire.simplefactions.faction.membership.Role;
+import com.entropire.simplefactions.objects.Pageable;
 
 public class FactionApplication {
     private DataBaseContext db;
@@ -42,6 +43,8 @@ public class FactionApplication {
                 else{
                     player.sendMessage("You are already part of an faction!");
                 }
+
+                return null;
             });
         }
         catch(FactionOwnerDuplicateException e){
@@ -63,7 +66,7 @@ public class FactionApplication {
                 
                 if(member.role() != Role.OWNER){
                     player.sendMessage("Only the owner of the faction can delete the faction!");
-                    return;
+                    return null;
                 }
 
                 List<FactionMembership> members = factionMembershipService.getAllByFactionUuid(conn, member.factionUuid());
@@ -79,11 +82,37 @@ public class FactionApplication {
                         memberPlayer.sendMessage("Your faction has been deleted!");
                     }
                 }
+
+                return null;
             }); 
         }
         catch(Exception e){
             player.sendMessage("Somthing whent wrong while deleting your faction.");
             e.printStackTrace();
         }
+    }
+
+    public Pageable<Faction> getFactions(Player player, Pageable<Faction> pageable){
+        Pageable<Faction> result = null;
+        
+        try{
+              result = db.transaction(conn -> {
+                List<Faction> factions = factionService.getFactions(conn, pageable);
+                int factionCount = factionService.getFactionsCount(conn);
+
+                return new Pageable<Faction>(
+                    factions, 
+                    pageable.currentPage(), 
+                    (factionCount + pageable.itemsPerPage() - 1) / pageable.itemsPerPage(),
+                    pageable.itemsPerPage()
+                );
+            });
+        }
+        catch(Exception e){
+            player.sendMessage("Somthing whent wrong while retrieving the list of factions.");
+            e.printStackTrace();
+        }
+        
+        return result;
     }
 }

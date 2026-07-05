@@ -16,31 +16,35 @@ public class DataBaseContext {
         initSchema();
     }
     
-    @FunctionalInterface
-    public interface SQLAction {
-        void execute(Connection conn) throws Exception;
+    public interface SQLAction<T> {
+        T execute(Connection conn) throws Exception;
     }
 
-    public void withConnection(SQLAction action) {
+    public <T> T withConnection(SQLAction<T> action) {
         try (Connection conn = openConnection()) {
-            action.execute(conn);
+            return action.execute(conn);
         } catch (Exception e) {
             throw new RuntimeException("Database operation failed", e);
         }
     }
 
-    public void transaction(SQLAction action) {
-        withConnection(conn -> {
+    public <T> T transaction(SQLAction<T> action) {
+        try (Connection conn = openConnection()) {
             conn.setAutoCommit(false);
 
             try {
-                action.execute(conn);
+                T result = action.execute(conn);
                 conn.commit();
+                return result;
+
             } catch (Exception e) {
                 conn.rollback();
                 throw e;
             }
-        });
+
+        } catch (Exception e) {
+            throw new RuntimeException("Database operation failed", e);
+        }
     }
 
     private Connection openConnection() throws Exception {
@@ -66,6 +70,8 @@ public class DataBaseContext {
                     stmt.execute(statement);
                 }
             }
+
+            return null;
         });
     }
 
