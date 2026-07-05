@@ -13,20 +13,33 @@ import java.util.Scanner;
 public class DataBaseContext {
 
     private final String path;
-    private final Connection connection;
 
     public DataBaseContext(String path) {
         this.path = path;
-
-        this.connection = createConnection();
         initSchema();
+    }
+    
+    @FunctionalInterface
+    public interface Transaction {
+        void execute(Connection conn) throws Exception;
+    }
+
+    public void transaction(Transaction transaction) throws Exception {
+        try (Connection conn = getConnection()) {
+
+            conn.setAutoCommit(false);
+
+            try {
+                transaction.execute(conn);
+                conn.commit();
+            } catch (Exception e) {
+                conn.rollback();
+                throw e;
+            }
+        }
     }
 
     public Connection getConnection() {
-        return connection;
-    }
-
-    private Connection createConnection() {
         try {
             return DriverManager.getConnection("jdbc:sqlite:" + path);
         } catch (SQLException e) {
@@ -35,20 +48,10 @@ public class DataBaseContext {
         }
     }
 
-    public void closeConnection() {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
-            }
-        } catch (SQLException e) {
-            SimpleFactions.getPluginLogger().severe("Failed to close database: " + e.getMessage());
-        }
-    }
-
     public void initSchema() {
         String sql = loadSql();
 
-        try (Statement stmt = connection.createStatement()) {
+        try (Statement stmt = getConnection().createStatement()) {
 
             for (String raw : sql.split(";")) {
                 String statement = raw.trim();

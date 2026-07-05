@@ -1,15 +1,13 @@
 package com.entropire.simplefactions.faction.invite;
 
+import java.sql.Connection;
+
 import com.entropire.simplefactions.faction.invite.exception.FactionInviteException;
 
 public class FactionInviteService {
-    private final FactionInviteRepository repository;
+    private final FactionInviteRepository repository = new FactionInviteRepository();
 
-    public FactionInviteService(FactionInviteRepository repository) {
-        this.repository = repository;
-    }
-
-    public void save(FactionInvite factionInvite) throws FactionInviteException {
-        repository.save(factionInvite);
+    public void save(Connection connection, FactionInvite factionInvite) throws FactionInviteException {
+        repository.save(connection, factionInvite);
     }
 }

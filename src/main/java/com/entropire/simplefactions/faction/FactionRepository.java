@@ -1,39 +1,47 @@
 package com.entropire.simplefactions.faction;
 
-import com.entropire.simplefactions.database.DataBaseContext;
 import com.entropire.simplefactions.faction.exception.FactionException;
 import com.entropire.simplefactions.faction.exception.FactionNameDuplicateException;
 import com.entropire.simplefactions.faction.exception.FactionOwnerDuplicateException;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.UUID;
 
 public class FactionRepository {
-    private final DataBaseContext db;
+    public Faction save(Connection connection, Faction faction) throws FactionException {
+        UUID uuid = faction.uuid() == null ? UUID.randomUUID() : faction.uuid();
 
-    public FactionRepository(DataBaseContext db) {
-        this.db = db;
-    }
+        Faction created = new Faction(
+            uuid, 
+            faction.name(), 
+            faction.color(),
+            faction.ownerUUID(),
+            null,
+            true,
+            null 
+            );
 
-    public void save(Faction faction) throws FactionException {
-        try (PreparedStatement preparedStatement = db.getConnection().prepareStatement("INSERT INTO factions (uuid, name, color, owner_uuid) VALUES (?, ?, ?, ?)")) {
-            preparedStatement.setString(1, (faction.uuid() == null ? UUID.randomUUID().toString() : faction.uuid().toString()) );
+        try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO factions (uuid, name, color, owner_uuid) VALUES (?, ?, ?, ?)")) {
+            preparedStatement.setString(1, created.uuid().toString());
             preparedStatement.setString(2, faction.name());
             preparedStatement.setString(3, faction.color());
             preparedStatement.setString(4, faction.ownerUUID().toString());
-            preparedStatement.execute();
+            preparedStatement.executeUpdate();
         }
         catch (SQLException e) {
-            String message = e.getMessage();
+            String message = e.getMessage().toLowerCase();
 
-            if (message.contains("UNIQUE constraint failed: Factions.owner_uuid")) {
+            if (message.contains("unique constraint failed: factions.owner_uuid")) {
                 throw new FactionOwnerDuplicateException("Faction owner already in use", e);
             }
-            if (message.contains("UNIQUE constraint failed: Factions.name")) {
+            if (message.contains("unique constraint failed: factions.name")) {
                 throw new FactionNameDuplicateException("Faction name already in use", e);
             }
             throw new FactionException("Failed to save faction", e);
         }
+
+        return created;
     }
 }

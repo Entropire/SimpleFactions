@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS factions (
     owner_uuid TEXT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     is_active INTEGER DEFAULT 1,
-    last_activity TIMESTAMP
+    last_activity TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_factions_name ON factions(name);

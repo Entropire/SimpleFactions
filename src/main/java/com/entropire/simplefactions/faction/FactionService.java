@@ -1,15 +1,13 @@
 package com.entropire.simplefactions.faction;
 
+import java.sql.Connection;
+
 import com.entropire.simplefactions.faction.exception.FactionException;
 
 public class FactionService {
-    private final FactionRepository repository;
+    private final FactionRepository repository = new FactionRepository();
 
-    public FactionService(FactionRepository repository) {
-        this.repository = repository;
-    }
-
-    public void save(Faction faction) throws FactionException {
-        repository.save(faction);
+    public Faction save(Connection connection, Faction faction) throws FactionException {
+        return repository.save(connection, faction);
     }
 }

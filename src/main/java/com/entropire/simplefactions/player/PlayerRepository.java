@@ -1,20 +1,14 @@
 package com.entropire.simplefactions.player;
 
-import com.entropire.simplefactions.database.DataBaseContext;
 import com.entropire.simplefactions.player.exception.PlayerException;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class PlayerRepository {
-    private final DataBaseContext db;
-
-    public PlayerRepository(DataBaseContext db) {
-        this.db = db;
-    }
-
-    public void save(Player player) throws PlayerException {
-        try (PreparedStatement preparedStatement = db.getConnection().prepareStatement("INSERT INTO players (uuid, username) VALUES (?, ?)")) {
+    public void save(Connection connection, Player player) throws PlayerException {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO players (uuid, username) VALUES (?, ?)")) {
             preparedStatement.setString(1, player.uuid().toString());
             preparedStatement.setString(2, player.username());
             preparedStatement.execute();

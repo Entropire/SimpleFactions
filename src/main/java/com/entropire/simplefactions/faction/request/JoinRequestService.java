@@ -1,15 +1,13 @@
 package com.entropire.simplefactions.faction.request;
 
+import java.sql.Connection;
+
 import com.entropire.simplefactions.faction.request.exception.JoinRequestException;
 
 public class JoinRequestService {
-    private final JoinRequestRepository repository;
+    private final JoinRequestRepository repository = new JoinRequestRepository();
 
-    public JoinRequestService(JoinRequestRepository repository) {
-        this.repository = repository;
-    }
-
-    public void save(JoinRequest joinRequest) throws JoinRequestException {
-        repository.save(joinRequest);
+    public void save(Connection connection, JoinRequest joinRequest) throws JoinRequestException {
+        repository.save(connection, joinRequest);
     }
 }
