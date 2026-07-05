@@ -1,5 +1,8 @@
 package com.entropire.simplefactions;
 
+import java.util.List;
+
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import com.entropire.simplefactions.database.DataBaseContext;
@@ -29,7 +32,7 @@ public class FactionApplication {
     public void createFaction(String name, String color, Player player){
         try{
             db.transaction(conn -> {
-                FactionMembership membership = factionMembershipService.get(conn, player.getUniqueId());
+                FactionMembership membership = factionMembershipService.getByPlayerUuid(conn, player.getUniqueId());
 
                 if(membership == null){
                     Faction faction = factionService.save(conn, new Faction(name, color, player.getUniqueId()));
@@ -51,5 +54,36 @@ public class FactionApplication {
             player.sendMessage("Something went wrong while making your faction!");
             e.printStackTrace();
         }  
+    }
+
+    public void deleteFaction(Player player){
+        try{
+            db.transaction(conn -> {
+                FactionMembership member = factionMembershipService.getByPlayerUuid(conn, player.getUniqueId());       
+                
+                if(member.role() != Role.OWNER){
+                    player.sendMessage("Only the owner of the faction can delete the faction!");
+                    return;
+                }
+
+                List<FactionMembership> members = factionMembershipService.getAllByFactionUuid(conn, member.factionUuid());
+                factionService.delete(conn, member.factionUuid());
+
+                for (FactionMembership factionMembership : members) {
+                    Player memberPlayer = Bukkit.getPlayer(factionMembership.playerUuid());
+
+                    if(memberPlayer.getUniqueId() == member.playerUuid()){
+                        memberPlayer.sendMessage("You have deleted your faction.");
+                    }
+                    else{
+                        memberPlayer.sendMessage("Your faction has been deleted!");
+                    }
+                }
+            }); 
+        }
+        catch(Exception e){
+            player.sendMessage("Somthing whent wrong while deleting your faction.");
+            e.printStackTrace();
+        }
     }
 }

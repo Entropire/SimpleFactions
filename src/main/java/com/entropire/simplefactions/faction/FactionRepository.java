@@ -10,7 +10,7 @@ import java.sql.SQLException;
 import java.util.UUID;
 
 public class FactionRepository {
-    public Faction save(Connection connection, Faction faction) throws FactionException {
+    public Faction save(Connection connection, Faction faction) throws FactionOwnerDuplicateException, FactionNameDuplicateException, FactionException {
         UUID uuid = faction.uuid() == null ? UUID.randomUUID() : faction.uuid();
 
         Faction created = new Faction(
@@ -43,5 +43,15 @@ public class FactionRepository {
         }
 
         return created;
+    }
+
+    public void delete(Connection connection, UUID uuid) throws FactionException {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM factions WHERE uuid IS ? ")) {
+            preparedStatement.setString(1, uuid.toString());
+            preparedStatement.execute();
+        }
+        catch (SQLException e) {
+            throw new FactionException("Failed to delete faction with uuid: '" + uuid.toString() + "'", e);
+        }
     }
 }

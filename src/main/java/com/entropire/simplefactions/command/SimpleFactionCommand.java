@@ -7,6 +7,7 @@ import org.bukkit.command.CommandSender;
 
 import com.entropire.simplefactions.FactionApplication;
 import com.entropire.simplefactions.command.sub.CreateCommand;
+import com.entropire.simplefactions.command.sub.DeleteCommand;
 import com.entropire.simplefactions.command.sub.HelpCommand;
 
 public class SimpleFactionCommand extends CommandNode {
@@ -14,6 +15,7 @@ public class SimpleFactionCommand extends CommandNode {
     public SimpleFactionCommand(FactionApplication factionApplication){
         register("help", new HelpCommand());
         register("create", new CreateCommand(factionApplication));
+        register("delete", new DeleteCommand(factionApplication));
     }
 
     @Override

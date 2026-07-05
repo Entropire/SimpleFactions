@@ -14,6 +14,8 @@ public class HelpCommand extends CommandNode{
         sender.sendMessage("""
                 =-=-=-=-=- Simple Factions -=-=-=-=-=
                 /sp help - get this usefull piece of text
+                /sp create [name] [collor] - create a new faction
+                /sp delete - delete your faction
                 """);
         return true;
     }

@@ -6,6 +6,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class FactionMembershipRepository {
@@ -21,9 +23,9 @@ public class FactionMembershipRepository {
         }
     }
 
-    public FactionMembership getByPlayerUUID(Connection connection, UUID playerUUID) throws FactionMembershipException {
+    public FactionMembership getByPlayerUuid(Connection connection, UUID uuid) throws FactionMembershipException {
         try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM faction_memberships Where player_uuid = ?")) {
-            preparedStatement.setString(1, playerUUID.toString());
+            preparedStatement.setString(1, uuid.toString());
             ResultSet rs = preparedStatement.executeQuery();
 
             FactionMembership factionMembership = null;
@@ -34,6 +36,30 @@ public class FactionMembershipRepository {
                     UUID.fromString(rs.getString("faction_uuid")), 
                     Role.valueOf(rs.getString("role")),
                     rs.getTimestamp("joined_at").toInstant() 
+                );
+            }
+
+            return factionMembership;
+        }
+        catch (SQLException e) {
+            throw new FactionMembershipException("Failed to retrieve faction membership", e);
+        }
+    }
+
+    public List<FactionMembership> getAllByFactionUuid(Connection connection, UUID uuid) throws FactionMembershipException{
+                try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM faction_memberships Where faction_uuid = ?")) {
+            preparedStatement.setString(1, uuid.toString());
+            ResultSet rs = preparedStatement.executeQuery();
+
+            List<FactionMembership> factionMembership = new ArrayList<>();
+ 
+            while (rs.next()) {
+                factionMembership.add(
+                    new FactionMembership(
+                    UUID.fromString(rs.getString("player_uuid")), 
+                    UUID.fromString(rs.getString("faction_uuid")), 
+                    Role.valueOf(rs.getString("role")),
+                    rs.getTimestamp("joined_at").toInstant())
                 );
             }
 
