@@ -1,13 +1,19 @@
 package com.entropire.simplefactions.player;
 
 import java.sql.Connection;
+import java.time.Instant;
+import java.util.UUID;
 
 import com.entropire.simplefactions.player.exception.PlayerException;
 
 public class PlayerService {
     private final PlayerRepository repository = new PlayerRepository();
 
-    public void save(Connection connection, Player player) throws PlayerException {
-        repository.save(connection, player);
+    public void saveIfNotExists(Connection connection, Player player) throws PlayerException {
+        repository.saveIfNotExists(connection, player);
+    }
+
+    public void updatePlayerLastSeen(Connection connection, UUID uuid, Instant lastseen){
+        repository.updatePlayerLastSeen(connection, uuid, lastseen);
     }
 }

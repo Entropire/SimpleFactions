@@ -8,9 +8,9 @@ CREATE TABLE IF NOT EXISTS factions (
     name TEXT NOT NULL UNIQUE,
     color TEXT NOT NULL,
     owner_uuid TEXT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
     is_active INTEGER DEFAULT 1,
-    last_activity TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    last_activity INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000)
 );
 
 CREATE INDEX IF NOT EXISTS idx_factions_name ON factions(name);
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS players (
     uuid TEXT PRIMARY KEY,
     username TEXT,
     chat_mode TEXT CHECK(chat_mode IN ('PUBLIC', 'FACTION')) DEFAULT 'PUBLIC',
-    last_seen TIMESTAMP
+    last_seen INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000)
     );
 
 CREATE INDEX IF NOT EXISTS idx_players_username ON players(username);
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS faction_memberships (
     player_uuid TEXT NOT NULL,
     faction_uuid TEXT NOT NULL,
     role TEXT CHECK(role IN ('OWNER', 'MEMBER')) NOT NULL,
-    joined_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    joined_at INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
 
     PRIMARY KEY (player_uuid, faction_uuid),
 
@@ -58,8 +58,8 @@ CREATE TABLE IF NOT EXISTS join_requests (
     uuid TEXT PRIMARY KEY,
     player_uuid TEXT NOT NULL,
     faction_uuid TEXT NOT NULL,
-    requested_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    expires_at TIMESTAMP NOT NULL,
+    requested_at INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
+    expires_at INTEGER NOT NULL,
 
     UNIQUE (player_uuid, faction_uuid),
 
@@ -82,8 +82,8 @@ CREATE TABLE IF NOT EXISTS faction_invites (
     faction_uuid TEXT NOT NULL,
     player_uuid TEXT NOT NULL,
     invited_by TEXT NOT NULL,
-    invited_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    expires_at TIMESTAMP NOT NULL,
+    invited_at INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
+    expires_at INTEGER NOT NULL,
 
     UNIQUE (faction_uuid, player_uuid),
 

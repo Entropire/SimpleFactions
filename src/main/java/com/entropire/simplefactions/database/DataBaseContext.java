@@ -21,7 +21,7 @@ public class DataBaseContext {
         void execute(Connection conn) throws Exception;
     }
 
-    private void withConnection(SQLAction action) {
+    public void withConnection(SQLAction action) {
         try (Connection conn = openConnection()) {
             action.execute(conn);
         } catch (Exception e) {
