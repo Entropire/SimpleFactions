@@ -5,7 +5,7 @@ import com.entropire.simplefactions.database.DataBaseContext;
 import com.entropire.simplefactions.faction.FactionService;
 import com.entropire.simplefactions.faction.membership.FactionMembershipService;
 import com.entropire.simplefactions.listener.PlayerJoinListener;
-import com.entropire.simplefactions.player.PlayerService;
+import com.entropire.simplefactions.player.FactionPlayerService;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -25,7 +25,7 @@ public final class SimpleFactions extends JavaPlugin {
 
         FactionService factionService = new FactionService();
         FactionMembershipService factionMembershipService = new FactionMembershipService();
-        PlayerService playerService = new PlayerService();
+        FactionPlayerService playerService = new FactionPlayerService();
 
         FactionApplication factionApplication = new FactionApplication(db, factionService, factionMembershipService);
 

@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import com.entropire.simplefactions.faction.exception.FactionException;
 import com.entropire.simplefactions.objects.Pageable;
+import com.entropire.simplefactions.player.FactionPlayer;
 
 public class FactionService {
     private final FactionRepository repository = new FactionRepository();
@@ -24,5 +25,9 @@ public class FactionService {
 
     public int getFactionsCount(Connection connection){
         return repository.getfactionsCount(connection);
+    }
+
+    public FactionPlayer getOwner(Connection connection, String factionName){
+        return repository.getOwner(connection, factionName);
     }
 }

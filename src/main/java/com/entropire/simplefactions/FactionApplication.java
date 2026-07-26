@@ -14,6 +14,7 @@ import com.entropire.simplefactions.faction.membership.FactionMembership;
 import com.entropire.simplefactions.faction.membership.FactionMembershipService;
 import com.entropire.simplefactions.faction.membership.Role;
 import com.entropire.simplefactions.objects.Pageable;
+import com.entropire.simplefactions.player.FactionPlayer;
 
 public class FactionApplication {
     private DataBaseContext db;
@@ -114,5 +115,20 @@ public class FactionApplication {
         }
         
         return result;
+    }
+
+    public FactionPlayer getFactionOwner(Player player, String factionName){
+        FactionPlayer factionPlayer = null;
+        try{
+            factionPlayer = db.withConnection(conn -> {
+                return factionService.getOwner(conn, factionName);
+            });
+        }
+        catch(Exception e){
+            player.sendMessage("Somthing whent wrong while retrieving the owner of faction: " + factionName + ".");
+            e.printStackTrace();
+        }
+
+        return factionPlayer;
     }
 }

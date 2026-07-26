@@ -8,8 +8,8 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.UUID;
 
-public class PlayerRepository {
-    public void saveIfNotExists(Connection connection, Player player) throws PlayerException {
+public class FactionPlayerRepository {
+    public void saveIfNotExists(Connection connection, FactionPlayer player) throws PlayerException {
         try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO players (uuid, username) VALUES (?, ?) on CONFLICT(uuid) DO NOTHING")) {
             preparedStatement.setString(1, player.uuid().toString());
             preparedStatement.setString(2, player.username());

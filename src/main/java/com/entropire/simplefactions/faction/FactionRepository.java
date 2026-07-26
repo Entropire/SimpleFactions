@@ -4,6 +4,8 @@ import com.entropire.simplefactions.faction.exception.FactionException;
 import com.entropire.simplefactions.faction.exception.FactionNameDuplicateException;
 import com.entropire.simplefactions.faction.exception.FactionOwnerDuplicateException;
 import com.entropire.simplefactions.objects.Pageable;
+import com.entropire.simplefactions.player.ChatMode;
+import com.entropire.simplefactions.player.FactionPlayer;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -100,6 +102,28 @@ public class FactionRepository {
         }
         catch (SQLException e) {
             throw new FactionException("Failed to retrieve faction count", e);
+        }
+    }
+
+    public FactionPlayer getOwner(Connection connection, String factionName){
+      try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT p.* from factions f JOIN players p ON p.uuid = f.owner_uuid WHERE f.name = ?")) {
+        preparedStatement.setString(1, factionName);    
+        ResultSet rs = preparedStatement.executeQuery();
+            
+            FactionPlayer owner = null;
+            while (rs.next()) {
+                owner = new FactionPlayer(
+                    UUID.fromString(rs.getString("uuid")), 
+                    rs.getString("username"), 
+                    ChatMode.valueOf(rs.getString("chat_mode")), 
+                    Instant.ofEpochMilli(rs.getLong("last_seen"))
+                );
+            }
+
+            return owner;
+        }
+        catch (SQLException e) {
+            throw new FactionException("Failed to retrieve owner of faction", e);
         }
     }
 }

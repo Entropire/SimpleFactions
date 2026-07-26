@@ -6,10 +6,10 @@ import java.util.UUID;
 
 import com.entropire.simplefactions.player.exception.PlayerException;
 
-public class PlayerService {
-    private final PlayerRepository repository = new PlayerRepository();
+public class FactionPlayerService {
+    private final FactionPlayerRepository repository = new FactionPlayerRepository();
 
-    public void saveIfNotExists(Connection connection, Player player) throws PlayerException {
+    public void saveIfNotExists(Connection connection, FactionPlayer player) throws PlayerException {
         repository.saveIfNotExists(connection, player);
     }
 

@@ -3,13 +3,13 @@ package com.entropire.simplefactions.player;
 import java.time.Instant;
 import java.util.UUID;
 
-public record Player(
+public record FactionPlayer(
         UUID uuid,
         String username,
         ChatMode chatMode,
         Instant lastSeen
 ) {
-    public Player {
+    public FactionPlayer {
         if (uuid == null) {
             throw new IllegalArgumentException("uuid cannot be null");
         }

@@ -10,6 +10,7 @@ import com.entropire.simplefactions.command.sub.CreateCommand;
 import com.entropire.simplefactions.command.sub.DeleteCommand;
 import com.entropire.simplefactions.command.sub.HelpCommand;
 import com.entropire.simplefactions.command.sub.ListCommand;
+import com.entropire.simplefactions.command.sub.OwnerCommand;
 
 public class SimpleFactionCommand extends CommandNode {
 
@@ -18,6 +19,7 @@ public class SimpleFactionCommand extends CommandNode {
         register("create", new CreateCommand(factionApplication));
         register("delete", new DeleteCommand(factionApplication));
         register("list", new ListCommand(factionApplication));
+        register("owner",  new OwnerCommand(factionApplication));
     }
 
     @Override
