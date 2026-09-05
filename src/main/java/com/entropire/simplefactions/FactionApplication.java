@@ -118,9 +118,9 @@ public class FactionApplication {
     }
 
     public FactionPlayer getFactionOwner(Player player, String factionName){
-        FactionPlayer factionPlayer = null;
+        FactionPlayer owner = null;
         try{
-            factionPlayer = db.withConnection(conn -> {
+            owner = db.withConnection(conn -> {
                 return factionService.getOwner(conn, factionName);
             });
         }
@@ -129,6 +129,6 @@ public class FactionApplication {
             e.printStackTrace();
         }
 
-        return factionPlayer;
+        return owner;
     }
 }

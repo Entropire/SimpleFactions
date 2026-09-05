@@ -34,6 +34,7 @@ public abstract class CommandNode implements CommandExecutor, TabCompleter {
 
         return execute(sender, command, alias, args);
     }
+    
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args){
@@ -53,4 +54,5 @@ public abstract class CommandNode implements CommandExecutor, TabCompleter {
     public abstract boolean execute(CommandSender sender, Command command, String alias, String[] args);
 
     public abstract List<String> tabComplete(CommandSender sender, Command command, String alias, String[] args);
+
 }

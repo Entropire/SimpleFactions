@@ -8,4 +8,5 @@ load: POSTWORLD
 commands:
   simplefactions:
     usage: "/simplefactions"
+    description: "Main simplefactions command. Preform /sf help for more help."
     aliases: [sf]

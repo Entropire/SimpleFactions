@@ -7,9 +7,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.entropire.simplefactions.FactionApplication;
+import com.entropire.simplefactions.chat.ChatMessage;
 import com.entropire.simplefactions.command.CommandNode;
 import com.entropire.simplefactions.faction.Faction;
 import com.entropire.simplefactions.objects.Pageable;
+
+import net.kyori.adventure.text.format.TextColor;
 
 public class ListCommand extends CommandNode {
 
@@ -31,10 +34,20 @@ public class ListCommand extends CommandNode {
 
         Pageable<Faction> factionsPage = factionApplication.getFactions(player, new Pageable<Faction>(page, 10));
 
-        sender.sendMessage("=-=-=-=-=- Factions -=-=-=-=-=\npage " + (factionsPage.currentPage() + 1) + "/" + factionsPage.maxPages() + "\n");
-        factionsPage.items().forEach(faction -> {
-            sender.sendMessage("- " + faction.name());
-        });
+        ChatMessage message = new ChatMessage()
+        .title(
+            factionsPage.maxPages() < 2
+                ? "List"
+                : "List (%d/%d)".formatted(
+                    factionsPage.currentPage() + 1,
+                    factionsPage.maxPages()
+                )
+        )
+        .textIf(factionsPage.maxPages() > 1, "Use /sf list [n] to get page n of list").setColor(TextColor.color(0xFFD166))
+        .list(factionsPage.items().stream().map(faction -> faction.name()).toList().toArray(String[]::new))
+        .title(null);
+
+        sender.sendMessage(message.build());
         return true;
     }
 
