@@ -53,4 +53,9 @@ public class ChatMessage {
         components.getLast().setColor(color);
         return this;
     }
+
+    public ChatMessage message(ChatMessage message){
+        components.addAll(message.components);
+        return this;
+    }
 }

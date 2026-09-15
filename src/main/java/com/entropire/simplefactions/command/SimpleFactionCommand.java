@@ -3,6 +3,7 @@ package com.entropire.simplefactions.command;
 import java.util.List;
 
 import com.entropire.simplefactions.chat.ChatMessage;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.command.CommandSender;
 
@@ -33,7 +34,7 @@ public class SimpleFactionCommand extends CommandNode {
     }
 
     @Override
-    public String help(String[] args) {
+    public ChatMessage help(String[] args) {
         List<CommandNode> children = getChildren();
         int page = 0;
         int maxPage = (int)Math.ceil((double) children.size() / 2);
@@ -42,15 +43,12 @@ public class SimpleFactionCommand extends CommandNode {
             page = Math.clamp(Integer.parseInt(args[0]) - 1, 0, maxPage - 1);
         }
 
-        ChatMessage message = new ChatMessage()
-                .textIf(children.size() > 10, "Use /help [n] to get page n of help").setColor(TextColor.color(0xFFD166))
+        return new ChatMessage()
+                .textIf(children.size() > 10, "Use /help [n] to get page n of help")
                 .textIf(children.size() > 10, "(Page " + page + "/" + maxPage)
-                .list(children.subList(page * 10, page * 10 + 10)
+                .list(children.subList(Math.clamp(page * 10L, 0, children.size() - 1), Math.clamp((page * 10L) + 10, 0, children.size() - 1))
                         .stream()
                         .map(commandNode -> "/f " + commandNode.getCommandName() + " - " + commandNode.getCommandDescription())
-                        .toArray(String[]::new))
-                .title(null);
-
-        return message.build().toString();
+                        .toArray(String[]::new));
     }
 }

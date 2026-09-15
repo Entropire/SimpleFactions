@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.entropire.simplefactions.chat.ChatMessage;
+import net.kyori.adventure.text.Component;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -43,7 +44,7 @@ public abstract class CommandNode implements CommandExecutor, TabCompleter {
     public boolean onCommand(@NonNull CommandSender sender, @NonNull Command command, @NonNull String alias, String[] args){
         if (args.length > 0) {
             if(args[0].equalsIgnoreCase("help")){
-                onHelp(sender, args);
+                onHelp(sender, Arrays.copyOfRange(args, 1, args.length));
                 return true;
             }
 
@@ -75,8 +76,8 @@ public abstract class CommandNode implements CommandExecutor, TabCompleter {
     private void onHelp(CommandSender sender, String[] args){
         ChatMessage message = new ChatMessage()
                 .title(commandName + " - help")
-                .text(commandDescription)
-                .text(help(args))
+                .textIf(!commandDescription.isEmpty(), commandDescription)
+                .message(help(args))
                 .title(null);
 
         sender.sendMessage(message.build());
@@ -86,5 +87,5 @@ public abstract class CommandNode implements CommandExecutor, TabCompleter {
 
     public abstract List<String> tabComplete(CommandSender sender);
 
-    public abstract String help(String[] args);
+    public abstract ChatMessage help(String[] args);
 }

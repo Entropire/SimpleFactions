@@ -57,7 +57,7 @@ public class ListCommand extends CommandNode {
     }
 
     @Override
-    public String help(String[] args) {
-        return "/f list <page>";
+    public ChatMessage help(String[] args) {
+        return new ChatMessage().text("/f list <page>");
     }
 }

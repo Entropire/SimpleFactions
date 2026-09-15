@@ -6,7 +6,7 @@ api-version: '26.1.1'
 load: POSTWORLD
 
 commands:
-  simplefactions:
+  faction:
     usage: "/faction"
     description: "Main simplefactions command. Preform /f help for more help."
     aliases: [f]

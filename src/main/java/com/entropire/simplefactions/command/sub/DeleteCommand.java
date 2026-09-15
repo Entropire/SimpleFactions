@@ -2,6 +2,7 @@ package com.entropire.simplefactions.command.sub;
 
 import java.util.List;
 
+import com.entropire.simplefactions.chat.ChatMessage;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -35,7 +36,7 @@ public class DeleteCommand extends CommandNode{
     }
 
     @Override
-    public String help(String[] args) {
-        return "/f delete";
+    public ChatMessage help(String[] args) {
+        return new ChatMessage().text("/f delete");
     }
 }
