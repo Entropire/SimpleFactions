@@ -29,8 +29,8 @@ public final class SimpleFactions extends JavaPlugin {
 
         FactionApplication factionApplication = new FactionApplication(db, factionService, factionMembershipService);
 
-        getCommand("simplefactions").setExecutor(new SimpleFactionCommand(factionApplication));
-        getCommand("simplefactions").setTabCompleter(new SimpleFactionCommand(factionApplication));
+        getCommand("faction").setExecutor(new SimpleFactionCommand(factionApplication));
+        getCommand("faction").setTabCompleter(new SimpleFactionCommand(factionApplication));
 
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(db, playerService), this);
     }

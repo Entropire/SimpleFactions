@@ -47,7 +47,7 @@ public class SimpleFactionCommand extends CommandNode {
                 .textIf(children.size() > 10, "(Page " + page + "/" + maxPage)
                 .list(children.subList(page * 10, page * 10 + 10)
                         .stream()
-                        .map(commandNode -> commandNode.getCommandName() + " - " + commandNode.getCommandDescription())
+                        .map(commandNode -> "/f " + commandNode.getCommandName() + " - " + commandNode.getCommandDescription())
                         .toArray(String[]::new))
                 .title(null);
 

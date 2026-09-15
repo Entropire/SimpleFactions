@@ -36,6 +36,6 @@ public class DeleteCommand extends CommandNode{
 
     @Override
     public String help(String[] args) {
-        return "/sf delete";
+        return "/f delete";
     }
 }

@@ -88,7 +88,7 @@ public class FactionApplication {
             }); 
         }
         catch(Exception e){
-            player.sendMessage("Somthing whent wrong while deleting your faction.");
+            player.sendMessage("Something went wrong while deleting your faction.");
             e.printStackTrace();
         }
     }
@@ -110,7 +110,7 @@ public class FactionApplication {
             });
         }
         catch(Exception e){
-            player.sendMessage("Somthing whent wrong while retrieving the list of factions.");
+            player.sendMessage("Something went wrong while retrieving the list of factions.");
             e.printStackTrace();
         }
         
@@ -125,7 +125,7 @@ public class FactionApplication {
             });
         }
         catch(Exception e){
-            player.sendMessage("Somthing whent wrong while retrieving the owner of faction: " + factionName + ".");
+            player.sendMessage("Something went wrong while retrieving the owner of faction: " + factionName + ".");
             e.printStackTrace();
         }
 

@@ -50,6 +50,6 @@ public class OwnerCommand extends CommandNode {
 
     @Override
     public String help(String[] args) {
-        return "/sf owner <FactionName>";
+        return "/f owner <FactionName>";
     }
 }

@@ -43,7 +43,7 @@ public class ListCommand extends CommandNode {
                     factionsPage.maxPages()
                 )
         )
-        .textIf(factionsPage.maxPages() > 1, "Use /sf list [n] to get page n of list").setColor(TextColor.color(0xFFD166))
+        .textIf(factionsPage.maxPages() > 1, "Use /f list [n] to get page n of list").setColor(TextColor.color(0xFFD166))
         .list(factionsPage.items().stream().map(Faction::name).toList().toArray(String[]::new))
         .title(null);
 
@@ -58,6 +58,6 @@ public class ListCommand extends CommandNode {
 
     @Override
     public String help(String[] args) {
-        return "/sf list <page>";
+        return "/f list <page>";
     }
 }

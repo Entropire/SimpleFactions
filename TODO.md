@@ -21,6 +21,7 @@
 ## Doing
 Implement tab completion for List and Owner command
 
+
 ## Done
 - Create database structure
 - Implement Faction object, repository and service

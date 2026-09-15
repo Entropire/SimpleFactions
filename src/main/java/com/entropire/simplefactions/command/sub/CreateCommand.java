@@ -40,6 +40,6 @@ public class CreateCommand extends CommandNode{
 
     @Override
     public String help(String[] args) {
-        return "/sf create <FactionName>";
+        return "/f create <FactionName>";
     }
 }
