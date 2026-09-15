@@ -2,7 +2,6 @@ package com.entropire.simplefactions.command.sub;
 
 import java.util.List;
 
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -12,14 +11,15 @@ import com.entropire.simplefactions.player.FactionPlayer;
 
 public class OwnerCommand extends CommandNode {
     
-    private FactionApplication factionApplication;
+    private final FactionApplication factionApplication;
     
     public OwnerCommand(FactionApplication factionApplication){
+        super("owner", "Return the owner of the faction.");
         this.factionApplication = factionApplication;
     }
 
     @Override
-    public boolean execute(CommandSender sender, Command command, String alias, String[] args){
+    public boolean execute(CommandSender sender, String[] args){
         if (!(sender instanceof Player player))
         {  
             sender.sendMessage("Only players can preform this command!");
@@ -44,7 +44,12 @@ public class OwnerCommand extends CommandNode {
     }
 
     @Override
-    public List<String> tabComplete(CommandSender sender, Command command, String alias, String[] args){
+    public List<String> tabComplete(CommandSender sender){
         return List.of();
+    }
+
+    @Override
+    public String help(String[] args) {
+        return "/sf owner <FactionName>";
     }
 }

@@ -2,7 +2,6 @@ package com.entropire.simplefactions.command.sub;
 
 import java.util.List;
 
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -16,14 +15,15 @@ import net.kyori.adventure.text.format.TextColor;
 
 public class ListCommand extends CommandNode {
 
-    private FactionApplication factionApplication;
+    private final FactionApplication factionApplication;
     
     public ListCommand(FactionApplication factionApplication){
+        super("list", "Returns the list of factions.");
         this.factionApplication = factionApplication;
     }
 
     @Override
-    public boolean execute(CommandSender sender, Command command, String alias, String[] args){
+    public boolean execute(CommandSender sender, String[] args){
         if (!(sender instanceof Player player))
         {
             sender.sendMessage("Only players can preform this command!");
@@ -44,7 +44,7 @@ public class ListCommand extends CommandNode {
                 )
         )
         .textIf(factionsPage.maxPages() > 1, "Use /sf list [n] to get page n of list").setColor(TextColor.color(0xFFD166))
-        .list(factionsPage.items().stream().map(faction -> faction.name()).toList().toArray(String[]::new))
+        .list(factionsPage.items().stream().map(Faction::name).toList().toArray(String[]::new))
         .title(null);
 
         sender.sendMessage(message.build());
@@ -52,7 +52,12 @@ public class ListCommand extends CommandNode {
     }
 
     @Override
-    public List<String> tabComplete(CommandSender sender, Command command, String alias, String[] args){
+    public List<String> tabComplete(CommandSender sender){
         return List.of();
+    }
+
+    @Override
+    public String help(String[] args) {
+        return "/sf list <page>";
     }
 }

@@ -19,7 +19,7 @@
 - Implement cashing for JoinRequist table
 
 ## Doing
-- Implement improved help command (where when you put help after a faction command it explains the command and its children)
+Implement tab completion for List and Owner command
 
 ## Done
 - Create database structure
@@ -37,5 +37,6 @@
 - Implement chat formating structure
 - Update help command to use new chat formating structure
 - Update list command to use new chat formating structure
+- Implement improved help command (where when you put help after a faction command it explains the command and its children)
 
 ## Never Going To Implement
