@@ -89,7 +89,7 @@ public class FactionRepository {
         }
     }
 
-    public int getfactionsCount(Connection connection){
+    public int getFactionsCount(Connection connection){
         try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM factions")) {
             ResultSet rs = preparedStatement.executeQuery();
             
@@ -124,6 +124,26 @@ public class FactionRepository {
         }
         catch (SQLException e) {
             throw new FactionException("Failed to retrieve owner of faction", e);
+        }
+    }
+
+    public List<String> getFactionNames(Connection connection, Pageable<String> pageable, String contains){
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT name FROM factions where name contains ? LIMIT ? OFFSET ?")) {
+            preparedStatement.setString(1, contains);
+            preparedStatement.setInt(2, pageable.itemsPerPage());
+            preparedStatement.setInt(3, pageable.currentPage() * pageable.itemsPerPage());
+            ResultSet rs = preparedStatement.executeQuery();
+
+            List<String> factionNames = new ArrayList<>();
+
+            while(rs.next()){
+                factionNames.add(rs.getString("name"));
+            }
+
+            return factionNames;
+        }
+        catch (SQLException e) {
+            throw new FactionException("Failed to retrieve factions", e);
         }
     }
 }

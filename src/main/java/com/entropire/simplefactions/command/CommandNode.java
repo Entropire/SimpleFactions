@@ -85,7 +85,7 @@ public abstract class CommandNode implements CommandExecutor, TabCompleter {
 
     public abstract boolean execute(CommandSender sender, String[] args);
 
-    public abstract List<String> tabComplete(CommandSender sender);
+    public abstract List<String> tabComplete(CommandSender sender, String[] args);
 
     public abstract ChatMessage help(String[] args);
 }

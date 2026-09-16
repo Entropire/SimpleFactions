@@ -1,7 +1,6 @@
 # SimpleFactions TODO
 
 ## BackLog
-- Implement members command
 - Implement invite command
 - Implement join request command
 - Implement invite/join request accept logic
@@ -19,7 +18,7 @@
 - Implement cashing for JoinRequist table
 
 ## Doing
-Implement tab completion for List and Owner command
+- Implement members command
 
 
 ## Done
@@ -39,5 +38,6 @@ Implement tab completion for List and Owner command
 - Update help command to use new chat formating structure
 - Update list command to use new chat formating structure
 - Implement improved help command (where when you put help after a faction command it explains the command and its children)
+- Implement tab completion for Owner command
 
 ## Never Going To Implement

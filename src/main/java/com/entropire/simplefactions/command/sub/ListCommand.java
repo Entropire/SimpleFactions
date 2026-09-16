@@ -52,7 +52,7 @@ public class ListCommand extends CommandNode {
     }
 
     @Override
-    public List<String> tabComplete(CommandSender sender){
+    public List<String> tabComplete(CommandSender sender, String[] args){
         return List.of();
     }
 

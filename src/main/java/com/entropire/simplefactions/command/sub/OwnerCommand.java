@@ -2,7 +2,11 @@ package com.entropire.simplefactions.command.sub;
 
 import java.util.List;
 
+<<<<<<< Updated upstream
 import com.entropire.simplefactions.chat.ChatMessage;
+=======
+import com.entropire.simplefactions.objects.Pageable;
+>>>>>>> Stashed changes
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -45,8 +49,12 @@ public class OwnerCommand extends CommandNode {
     }
 
     @Override
-    public List<String> tabComplete(CommandSender sender){
-        return List.of();
+    public List<String> tabComplete(CommandSender sender, String[] args){
+        if(args.length < 1 || args[0].isEmpty()) return List.of();
+
+        Pageable<String> pageable = new Pageable<>(0, 20);
+
+        return factionApplication.getFactionNames(pageable, args[0]).items();
     }
 
     @Override

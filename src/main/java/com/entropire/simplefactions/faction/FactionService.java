@@ -24,10 +24,14 @@ public class FactionService {
     }
 
     public int getFactionsCount(Connection connection){
-        return repository.getfactionsCount(connection);
+        return repository.getFactionsCount(connection);
     }
 
     public FactionPlayer getOwner(Connection connection, String factionName){
         return repository.getOwner(connection, factionName);
+    }
+
+    public List<String> getFactionNames(Connection connection, Pageable<String> pageable, String contains){
+        return repository.getFactionNames(connection, pageable, contains);
     }
 }

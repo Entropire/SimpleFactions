@@ -131,4 +131,24 @@ public class FactionApplication {
 
         return owner;
     }
+
+    public Pageable<String> getFactionNames(Pageable<String> pageable, String contains){
+        Pageable<String> result = null;
+        try {
+            result = db.transaction(conn -> {
+               List<String> factionNames = factionService.getFactionNames(conn, pageable, contains);
+                int factionCount = factionService.getFactionsCount(conn);
+
+                return new Pageable<>(
+                        factionNames,
+                        pageable.currentPage(),
+                        (factionCount + pageable.itemsPerPage() - 1) / pageable.itemsPerPage(),
+                        pageable.itemsPerPage()
+                );
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return result;
+    }
 }
