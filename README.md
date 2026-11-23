@@ -1,5 +1,5 @@
 <div align="center">
-  <img alt="Simple Factions Banner" src="./images/Banner.png">
+  <img alt="Simple Factions Banner" src="./images/SimpleFaction-Banner.png">
 
 [![Release v3.0.0](https://img.shields.io/badge/Release-v3.0.0-darkgreen?style=flat-square)](https://modrinth.com/plugin/simple-factions/version/3.0.0)
 [![Installs 2.5k](https://img.shields.io/badge/Installs-2.5k-brightgreen?style=flat-square)](https://modrinth.com/plugin/simple-factions)
