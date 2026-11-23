@@ -11,13 +11,11 @@ Everything in "BackLog → Parity with old version" is needed before the new ver
 - Implement accept command for invites and join requests
 - Implement decline command for invites and join requests (notify the other side)
 - Implement expiry of invites/join requests (old: 30 seconds; use `expires_at` + a cleanup task)
-- Implement leave command (owner cannot leave)
 - Implement kick command (owner only, cannot kick self, notify kicked player if online, tab-complete members)
 - Implement modify command group (`/f modify name|color|owner`)
 - Implement modify name command (same validation as create)
 - Implement modify color command (tab-complete colors; decide between old named colors and new hex colors)
 - Implement modify owner command (tab-complete members, update membership roles + factions.owner_uuid)
-- Make `/f owner` without a faction name show the owner of your own faction
 - Make `/f` without arguments open the GUI (falls back to help when the GUI is disabled)
 
 ### Parity with old version: faction rules
@@ -66,6 +64,7 @@ Everything in "BackLog → Parity with old version" is needed before the new ver
 - Implement cashing for JoinRequist table
 
 ## Doing
+- Implement leave command (owner cannot leave)
 
 ## Done
 - Create database structure
@@ -108,5 +107,7 @@ Everything in "BackLog → Parity with old version" is needed before the new ver
 - Fix tab completion: `CommandNode.onTabComplete` now calls each command's `tabComplete` (owner and members completion work)
 - Faction names are case-insensitive (`COLLATE NOCASE`): `/f members RED` finds "Red" and "Red"/"RED" can't both exist
 - `/f members` shows the faction's real name (new `getByName` lookup and `FactionMembersPage`)
+- Make `/f owner` without a faction name show the owner of your own faction
+- Make `/f member` without a faction name show the members of your own faction
 
 ## Never Going To Implement

@@ -214,4 +214,28 @@ public class FactionRepository {
             return new Result.Error<>("Failed to retrieve faction members count", e);
         }
     }
+
+    public Result<Faction> getByUuid(Connection connection, UUID factionUuid) {
+        try (PreparedStatement ps = connection.prepareStatement("SELECT * FROM factions WHERE uuid = ?")) {
+            ps.setString(1, factionUuid.toString());
+            ResultSet rs = ps.executeQuery();
+
+            if (!rs.next()) {
+                return new Result.Failure<>("Your faction no longer exists.");
+            }
+
+            return new Result.Success<>(new Faction(
+                    UUID.fromString(rs.getString("uuid")),
+                    rs.getString("name"),
+                    rs.getString("color"),
+                    UUID.fromString(rs.getString("owner_uuid")),
+                    Instant.ofEpochMilli(rs.getLong("created_at")),
+                    rs.getBoolean("is_active"),
+                    Instant.ofEpochMilli(rs.getLong("last_activity"))
+            ));
+        }
+        catch (SQLException e) {
+            return new Result.Error<>("Failed to retrieve faction " + factionUuid, e);
+        }
+    }
 }

@@ -31,21 +31,16 @@ public class OwnerCommand extends CommandNode {
             return true;
         }
 
-        if(args.length < 1){
-            player.sendMessage(help(args).build());
-            return true;
-        }
+        Result<FactionPlayer> result = args.length < 1
+                ? factionApplication.getPlayerFactionOwner(player.getUniqueId())
+                : factionApplication.getFactionOwner(args[0]);
 
-        switch (factionApplication.getFactionOwner(args[0])){
+        switch (result) {
             case Result.Success<FactionPlayer>(FactionPlayer owner) -> player.sendMessage(owner.username());
-            case Result.Failure<FactionPlayer>(String message) -> {
-                player.sendMessage(message);
-                return true;
-            }
+            case Result.Failure<FactionPlayer>(String message) -> player.sendMessage(message);
             case Result.Error<FactionPlayer>(String message, Exception e) -> {
                 SimpleFactions.getPluginLogger().log(Level.SEVERE, message, e);
                 player.sendMessage("Something went wrong while retrieving the owner of the faction.");
-                return true;
             }
         }
         return true;

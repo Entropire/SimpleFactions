@@ -26,28 +26,25 @@ public class MembersCommand extends CommandNode {
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player player))
-        {
+        if (!(sender instanceof Player player)) {
             sender.sendMessage("Only players can preform this command!");
-            return false;
-        }
-
-        if(args.length < 1){
-            player.sendMessage(help(args).build());
             return true;
         }
-        String factionName = args[0];
 
-        int pageRequest;
-        try{
-            pageRequest = Integer.parseInt(args[1]);
-        }catch (Exception _){
-            pageRequest = 0;
+        boolean ownFaction = args.length == 0 || (args.length == 1 && isNumber(args[0]));
+
+        Result<FactionMembersPage> result;
+        if (ownFaction) {
+            int page = args.length == 1 ? parsePage(args[0]) : 0;
+            result = factionApplication.getPlayerFactionMembers(player.getUniqueId(), new Pageable<>(page, 10));
+        } else {
+            int page = args.length > 1 ? parsePage(args[1]) : 0;
+            result = factionApplication.getFactionMembers(args[0], new Pageable<>(page, 10));
         }
-        int page = args.length == 1 ? 0 : Math.max(0, pageRequest - 1);
 
+        String factionName;
         Pageable<FactionPlayer> factionPlayerPage;
-        switch (factionApplication.getFactionMembers(factionName, new Pageable<>(page, 10))) {
+        switch (result) {
             case Result.Success<FactionMembersPage>(FactionMembersPage value) -> {
                 factionName = value.faction().name();
                 factionPlayerPage = value.members();
@@ -58,28 +55,45 @@ public class MembersCommand extends CommandNode {
             }
             case Result.Error<FactionMembersPage>(String message, Exception e) -> {
                 SimpleFactions.getPluginLogger().log(Level.SEVERE, message, e);
-                player.sendMessage("Something went wrong while retrieving the list of members of the faction " + factionName + "." );
+                player.sendMessage(ownFaction
+                        ? "Something went wrong while retrieving the list of members of your faction."
+                        : "Something went wrong while retrieving the list of members of the faction " + args[0] + ".");
                 return true;
             }
         }
 
+        String title = factionPlayerPage.maxPages() < 2
+                ? "Members of " + factionName
+                : "Members of " + factionName + " (%d/%d)".formatted(
+                        factionPlayerPage.currentPage() + 1,
+                        factionPlayerPage.maxPages());
+
+        String pageHint = ownFaction
+                ? "Use /f members [n] to get page n"
+                : "Use /f members " + factionName + " [n] to get page n";
+
         ChatMessage message = new ChatMessage()
-                .title(
-                        factionPlayerPage.maxPages() < 2
-                                ? "Members of " + factionName
-                                : "Members of " + factionName + " (%d/%d)".formatted(
-                                factionPlayerPage.currentPage() + 1,
-                                factionPlayerPage.maxPages()
-                        )
-                )
-                .textIf(factionPlayerPage.maxPages() > 1, "Use /f members " + factionName + " [n] to get page n").setColor(TextColor.color(0xFFD166))
-                .list(factionPlayerPage.items().stream().map(FactionPlayer::username).toList().toArray(String[]::new))
+                .title(title)
+                .textIf(factionPlayerPage.maxPages() > 1, pageHint).setColor(TextColor.color(0xFFD166))
+                .list(factionPlayerPage.items().stream().map(FactionPlayer::username).toArray(String[]::new))
                 .title(null);
 
-        sender.sendMessage(message.build());
+        player.sendMessage(message.build());
         return true;
     }
 
+    private static boolean isNumber(String s) {
+        return s.matches("\\d+");
+    }
+
+    private static int parsePage(String s) {
+        try {
+            return Math.max(0, Integer.parseInt(s) - 1);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+    
     @Override
     public List<String> tabComplete(CommandSender sender, String[] args) {
         if (args.length != 1 || args[0].isEmpty()) return List.of();

@@ -47,4 +47,7 @@ public class FactionService {
         return repository.getFactionMembersCount(connection, factionName);
     }
 
+    public Result<Faction> getByUuid(Connection connection, UUID factionUuid) {
+        return repository.getByUuid(connection, factionUuid);
+    }
 }

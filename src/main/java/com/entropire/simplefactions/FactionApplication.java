@@ -77,10 +77,6 @@ public class FactionApplication {
         });
     }
 
-    public Result<FactionPlayer> getFactionOwner(String factionName){
-        return db.withConnection(conn -> factionService.getOwner(conn, factionName));
-    }
-
     public Result<Pageable<String>> getFactionNames(Pageable<String> pageable, String contains){
         return db.withConnection(conn -> {
             Result<List<String>> factionNamesResult = factionService.getFactionNames(conn, pageable, contains);
@@ -90,21 +86,56 @@ public class FactionApplication {
         });
     }
 
-    public Result<FactionMembersPage> getFactionMembers(String factionName, Pageable<FactionPlayer> pageable){
+    private Result<Faction> getPlayerFaction(Connection conn, UUID playerUuid) {
+        Result<FactionMembership> membershipResult = factionMembershipService.getByPlayerUuid(conn, playerUuid);
+        if (!(membershipResult instanceof Result.Success(var membership))) return membershipResult.propagate();
+        if (membership == null) return new Result.Failure<>("You are not in a faction!");
+
+        return factionService.getByUuid(conn, membership.factionUuid());
+    }
+
+    public Result<FactionPlayer> getFactionOwner(String factionName){
+        return db.withConnection(conn -> factionService.getOwner(conn, factionName));
+    }
+
+    public Result<FactionPlayer> getPlayerFactionOwner(UUID playerUuid) {
+        return db.transaction(conn -> {
+            Result<Faction> factionResult = getPlayerFaction(conn, playerUuid);
+            if (!(factionResult instanceof Result.Success(var faction))) return factionResult.propagate();
+
+            return factionService.getOwner(conn, faction.name());
+        });
+    }
+
+    public Result<FactionMembersPage> getFactionMembers(String factionName, Pageable<FactionPlayer> pageable) {
         return db.transaction(conn -> {
             Result<Faction> factionResult = factionService.getByName(conn, factionName);
             if (!(factionResult instanceof Result.Success(var faction))) return factionResult.propagate();
 
-            Result<Integer> countResult = factionService.getFactionMembersCount(conn, faction.name());
-            if (!(countResult instanceof Result.Success(var memberCount))) return countResult.propagate();
-
-            int maxPages = Math.max(1, (memberCount + pageable.itemsPerPage() - 1) / pageable.itemsPerPage());
-            int page = Math.clamp(pageable.currentPage(), 0, maxPages - 1);
-
-            Result<List<FactionPlayer>> factionMembersResult = factionService.getFactionMembers(conn, faction.name(), new Pageable<>(page, pageable.itemsPerPage()));
-            if (!(factionMembersResult instanceof Result.Success(var members))) return factionMembersResult.propagate();
-
-            return new Result.Success<>(new FactionMembersPage(faction, new Pageable<>(members, page, maxPages, pageable.itemsPerPage())));
+            return getFactionMembers(conn, faction, pageable);
         });
+    }
+
+
+    public Result<FactionMembersPage> getPlayerFactionMembers(UUID playerUuid, Pageable<FactionPlayer> pageable) {
+        return db.transaction(conn -> {
+            Result<Faction> factionResult = getPlayerFaction(conn, playerUuid);
+            if (!(factionResult instanceof Result.Success(var faction))) return factionResult.propagate();
+
+            return getFactionMembers(conn, faction, pageable);
+        });
+    }
+
+    private Result<FactionMembersPage> getFactionMembers(Connection conn, Faction faction, Pageable<FactionPlayer> pageable) {
+        Result<Integer> countResult = factionService.getFactionMembersCount(conn, faction.name());
+        if (!(countResult instanceof Result.Success(var memberCount))) return countResult.propagate();
+
+        int maxPages = Math.max(1, (memberCount + pageable.itemsPerPage() - 1) / pageable.itemsPerPage());
+        int page = Math.clamp(pageable.currentPage(), 0, maxPages - 1);
+
+        Result<List<FactionPlayer>> membersResult = factionService.getFactionMembers(conn, faction.name(), new Pageable<>(page, pageable.itemsPerPage()));
+        if (!(membersResult instanceof Result.Success(var members))) return membersResult.propagate();
+
+        return new Result.Success<>(new FactionMembersPage(faction, new Pageable<>(members, page, maxPages, pageable.itemsPerPage())));
     }
 }
