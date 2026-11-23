@@ -1,5 +1,7 @@
 package com.entropire.simplefactions.database;
 
+import com.entropire.simplefactions.objects.Result;
+
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
@@ -13,37 +15,34 @@ public class DataBaseContext {
 
     public DataBaseContext(String path) {
         this.path = path;
-        initSchema();
-    }
-    
-    public interface SQLAction<T> {
-        T execute(Connection conn) throws Exception;
     }
 
-    public <T> T withConnection(SQLAction<T> action) {
+    public interface SQLAction<T> {
+        Result<T> execute(Connection conn) throws Exception;
+    }
+
+    public <T> Result<T> withConnection(SQLAction<T> action) {
         try (Connection conn = openConnection()) {
             return action.execute(conn);
         } catch (Exception e) {
-            throw new RuntimeException("Database operation failed", e);
+            return new Result.Error<>("Database operation failed", e);
         }
     }
 
-    public <T> T transaction(SQLAction<T> action) {
+    public <T> Result<T> transaction(SQLAction<T> action) {
         try (Connection conn = openConnection()) {
             conn.setAutoCommit(false);
-
             try {
-                T result = action.execute(conn);
-                conn.commit();
+                Result<T> result = action.execute(conn);
+                if (result.isSuccess()) conn.commit();
+                else conn.rollback();
                 return result;
-
             } catch (Exception e) {
                 conn.rollback();
-                throw e;
+                return new Result.Error<>("Database operation failed", e);
             }
-
         } catch (Exception e) {
-            throw new RuntimeException("Database operation failed", e);
+            return new Result.Error<>("Database operation failed", e);
         }
     }
 
@@ -57,12 +56,12 @@ public class DataBaseContext {
         return conn;
     }
 
-    public void initSchema() {
-        String sql = loadSql();
+    /** Creates all tables and indexes. Runs in one transaction, so a broken schema leaves nothing half-created. */
+    public Result<Boolean> initSchema() {
+        return transaction(conn -> {
+            String sql = loadSql();
 
-        withConnection(conn -> {
             try (Statement stmt = conn.createStatement()) {
-
                 for (String raw : sql.split(";")) {
                     String statement = raw.trim();
                     if (statement.isEmpty()) continue;
@@ -71,7 +70,7 @@ public class DataBaseContext {
                 }
             }
 
-            return null;
+            return new Result.Success<>(true);
         });
     }
 

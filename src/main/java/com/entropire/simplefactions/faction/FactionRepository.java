@@ -1,9 +1,7 @@
 package com.entropire.simplefactions.faction;
 
-import com.entropire.simplefactions.faction.exception.FactionException;
-import com.entropire.simplefactions.faction.exception.FactionNameDuplicateException;
-import com.entropire.simplefactions.faction.exception.FactionOwnerDuplicateException;
 import com.entropire.simplefactions.objects.Pageable;
+import com.entropire.simplefactions.objects.Result;
 import com.entropire.simplefactions.player.ChatMode;
 import com.entropire.simplefactions.player.FactionPlayer;
 
@@ -17,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class FactionRepository {
-    public Faction save(Connection connection, Faction faction) throws FactionOwnerDuplicateException, FactionNameDuplicateException, FactionException {
+    public Result<Faction> save(Connection connection, Faction faction) {
         UUID uuid = faction.uuid() == null ? UUID.randomUUID() : faction.uuid();
 
         Faction created = new Faction(
@@ -41,28 +39,30 @@ public class FactionRepository {
             String message = e.getMessage().toLowerCase();
 
             if (message.contains("unique constraint failed: factions.owner_uuid")) {
-                throw new FactionOwnerDuplicateException("Faction owner already in use", e);
+                return new Result.Failure<>("Faction owner already in use");
             }
             if (message.contains("unique constraint failed: factions.name")) {
-                throw new FactionNameDuplicateException("Faction name already in use", e);
+                return new Result.Failure<>("Faction name already in use");
             }
-            throw new FactionException("Failed to save faction", e);
+            return new Result.Error<>("Failed to save faction", e);
         }
 
-        return created;
+        return new Result.Success<>(created);
     }
 
-    public void delete(Connection connection, UUID uuid) throws FactionException {
+    public Result<Boolean> delete(Connection connection, UUID uuid) {
         try (PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM factions WHERE uuid IS ? ")) {
             preparedStatement.setString(1, uuid.toString());
             preparedStatement.execute();
         }
         catch (SQLException e) {
-            throw new FactionException("Failed to delete faction with uuid: '" + uuid.toString() + "'", e);
+            return new Result.Error<>("Failed to delete faction with uuid: '" + uuid.toString() + "'", e);
         }
+
+        return new Result.Success<>(true);
     }
 
-    public List<Faction> getFactions(Connection connection, Pageable<Faction> pageable){
+    public Result<List<Faction>> getFactions(Connection connection, Pageable<Faction> pageable){
         try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM factions ORDER BY last_activity DESC LIMIT ? OFFSET ?")) {
             preparedStatement.setInt(1, pageable.itemsPerPage());
             preparedStatement.setInt(2, pageable.currentPage() * pageable.itemsPerPage());
@@ -82,14 +82,14 @@ public class FactionRepository {
                 ));
             }
 
-            return factions;
+            return new Result.Success<>(factions);
         }
         catch (SQLException e) {
-            throw new FactionException("Failed to retrieve factions", e);
+            return new Result.Error<>("Failed to retrieve factions", e);
         }
     }
 
-    public int getFactionsCount(Connection connection){
+    public Result<Integer> getFactionsCount(Connection connection){
         try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM factions")) {
             ResultSet rs = preparedStatement.executeQuery();
             
@@ -98,14 +98,14 @@ public class FactionRepository {
                 count = rs.getInt(1);
             }
 
-            return count;
+            return new Result.Success<>(count);
         }
         catch (SQLException e) {
-            throw new FactionException("Failed to retrieve faction count", e);
+            return new Result.Error<>("Failed to retrieve faction count", e);
         }
     }
 
-    public FactionPlayer getOwner(Connection connection, String factionName){
+    public Result<FactionPlayer> getOwner(Connection connection, String factionName){
       try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT p.* from factions f JOIN players p ON p.uuid = f.owner_uuid WHERE f.name = ?")) {
         preparedStatement.setString(1, factionName);    
         ResultSet rs = preparedStatement.executeQuery();
@@ -120,15 +120,15 @@ public class FactionRepository {
                 );
             }
 
-            return owner;
+            return new Result.Success<>(owner);
         }
         catch (SQLException e) {
-            throw new FactionException("Failed to retrieve owner of faction", e);
+            return new Result.Error<>("Failed to retrieve owner of faction", e);
         }
     }
 
-    public List<String> getFactionNames(Connection connection, Pageable<String> pageable, String contains){
-        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT name FROM factions where name contains ? LIMIT ? OFFSET ?")) {
+    public Result<List<String>> getFactionNames(Connection connection, Pageable<String> pageable, String contains){
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT name FROM factions WHERE name LIKE ? || '%' LIMIT ? OFFSET ?")) {
             preparedStatement.setString(1, contains);
             preparedStatement.setInt(2, pageable.itemsPerPage());
             preparedStatement.setInt(3, pageable.currentPage() * pageable.itemsPerPage());
@@ -140,10 +140,10 @@ public class FactionRepository {
                 factionNames.add(rs.getString("name"));
             }
 
-            return factionNames;
+            return new Result.Success<>(factionNames);
         }
         catch (SQLException e) {
-            throw new FactionException("Failed to retrieve factions", e);
+            return new Result.Error<>("Failed to retrieve factions", e);
         }
     }
 }

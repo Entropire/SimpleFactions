@@ -1,6 +1,6 @@
 package com.entropire.simplefactions.faction.membership;
 
-import com.entropire.simplefactions.faction.membership.exception.FactionMembershipException;
+import com.entropire.simplefactions.objects.Result;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class FactionMembershipRepository {
-    public void save(Connection connection, FactionMembership factionMembership) throws FactionMembershipException {
+    public Result<Boolean> save(Connection connection, FactionMembership factionMembership) {
         try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO faction_memberships (player_uuid, faction_uuid, role) VALUES (?, ?, ?)")) {
             preparedStatement.setString(1, factionMembership.playerUuid().toString());
             preparedStatement.setString(2, factionMembership.factionUuid().toString());
@@ -19,11 +19,13 @@ public class FactionMembershipRepository {
             preparedStatement.execute();
         }
         catch (SQLException e) {
-            throw new FactionMembershipException("Failed to save faction membership", e);
+            return new Result.Error<>("Failed to save faction membership", e);
         }
+
+        return new Result.Success<>(true);
     }
 
-    public FactionMembership getByPlayerUuid(Connection connection, UUID uuid) throws FactionMembershipException {
+    public Result<FactionMembership> getByPlayerUuid(Connection connection, UUID uuid) {
         try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM faction_memberships Where player_uuid = ?")) {
             preparedStatement.setString(1, uuid.toString());
             ResultSet rs = preparedStatement.executeQuery();
@@ -39,15 +41,15 @@ public class FactionMembershipRepository {
                 );
             }
 
-            return factionMembership;
+            return new Result.Success<>(factionMembership);
         }
         catch (SQLException e) {
-            throw new FactionMembershipException("Failed to retrieve faction membership", e);
+            return new Result.Error<>("Failed to retrieve faction membership", e);
         }
     }
 
-    public List<FactionMembership> getAllByFactionUuid(Connection connection, UUID uuid) throws FactionMembershipException{
-                try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM faction_memberships Where faction_uuid = ?")) {
+    public Result<List<FactionMembership>> getAllByFactionUuid(Connection connection, UUID uuid) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM faction_memberships Where faction_uuid = ?")) {
             preparedStatement.setString(1, uuid.toString());
             ResultSet rs = preparedStatement.executeQuery();
 
@@ -63,10 +65,10 @@ public class FactionMembershipRepository {
                 );
             }
 
-            return factionMembership;
+            return new Result.Success<>(factionMembership);
         }
         catch (SQLException e) {
-            throw new FactionMembershipException("Failed to retrieve faction membership", e);
+            return new Result.Error<>("Failed to retrieve faction membership", e);
         }
     }
 }

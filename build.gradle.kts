@@ -1,6 +1,7 @@
 plugins {
     id("java-library")
     id("xyz.jpenilla.run-paper") version "3.0.2"
+    kotlin("jvm")
 }
 
 repositories {
@@ -16,6 +17,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.mockito:mockito-core:5.15.2")
     testImplementation("org.mockito:mockito-junit-jupiter:5.15.2")
+    testImplementation(kotlin("test"))
 }
 
 java {
@@ -38,4 +40,7 @@ tasks {
     test {
         useJUnitPlatform()
     }
+}
+kotlin {
+    jvmToolchain(25)
 }

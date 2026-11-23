@@ -4,34 +4,34 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.UUID;
 
-import com.entropire.simplefactions.faction.exception.FactionException;
 import com.entropire.simplefactions.objects.Pageable;
+import com.entropire.simplefactions.objects.Result;
 import com.entropire.simplefactions.player.FactionPlayer;
 
 public class FactionService {
     private final FactionRepository repository = new FactionRepository();
 
-    public Faction save(Connection connection, Faction faction) throws FactionException {
+    public Result<Faction> save(Connection connection, Faction faction) {
         return repository.save(connection, faction);
     }
 
-    public void delete(Connection connection, UUID uuid) throws FactionException {
-       repository.delete(connection, uuid); 
+    public Result<Boolean> delete(Connection connection, UUID uuid) {
+       return repository.delete(connection, uuid);
     }  
 
-    public List<Faction> getFactions(Connection connection, Pageable<Faction> pageable){
+    public Result<List<Faction>> getFactions(Connection connection, Pageable<Faction> pageable){
         return repository.getFactions(connection, pageable);
     }
 
-    public int getFactionsCount(Connection connection){
+    public Result<Integer> getFactionsCount(Connection connection){
         return repository.getFactionsCount(connection);
     }
 
-    public FactionPlayer getOwner(Connection connection, String factionName){
+    public Result<FactionPlayer> getOwner(Connection connection, String factionName){
         return repository.getOwner(connection, factionName);
     }
 
-    public List<String> getFactionNames(Connection connection, Pageable<String> pageable, String contains){
+    public Result<List<String>> getFactionNames(Connection connection, Pageable<String> pageable, String contains){
         return repository.getFactionNames(connection, pageable, contains);
     }
 }

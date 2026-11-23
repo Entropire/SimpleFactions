@@ -4,20 +4,20 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.UUID;
 
-import com.entropire.simplefactions.faction.membership.exception.FactionMembershipException;
+import com.entropire.simplefactions.objects.Result;
 
 public class FactionMembershipService {
     private final FactionMembershipRepository repository = new FactionMembershipRepository();
 
-    public void save(Connection connection, FactionMembership factionMembership) throws FactionMembershipException {
-        repository.save(connection, factionMembership);
+    public Result<Boolean> save(Connection connection, FactionMembership factionMembership) {
+        return repository.save(connection, factionMembership);
     }
 
-    public FactionMembership getByPlayerUuid(Connection connection, UUID uuid) throws FactionMembershipException{
+    public Result<FactionMembership> getByPlayerUuid(Connection connection, UUID uuid) {
         return repository.getByPlayerUuid(connection, uuid);
     }
 
-    public List<FactionMembership> getAllByFactionUuid(Connection connection, UUID uuid) throws FactionMembershipException{
+    public Result<List<FactionMembership>> getAllByFactionUuid(Connection connection, UUID uuid) {
         return repository.getAllByFactionUuid(connection, uuid);
     }
 }

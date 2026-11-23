@@ -1,12 +1,12 @@
 package com.entropire.simplefactions.command.sub;
 
 import java.util.List;
+import java.util.logging.Level;
 
-<<<<<<< Updated upstream
+import com.entropire.simplefactions.SimpleFactions;
 import com.entropire.simplefactions.chat.ChatMessage;
-=======
 import com.entropire.simplefactions.objects.Pageable;
->>>>>>> Stashed changes
+import com.entropire.simplefactions.objects.Result;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -36,25 +36,33 @@ public class OwnerCommand extends CommandNode {
             return true;
         }
 
-        FactionPlayer factionPlayer = factionApplication.getFactionOwner(player, args[0]);
-        
-        if(factionPlayer == null){
-            player.sendMessage("Could not find the owner of faction " + args[0]);
+        switch (factionApplication.getFactionOwner(args[0])){
+            case Result.Success<FactionPlayer>(FactionPlayer owner) -> player.sendMessage(owner.username());
+            case Result.Failure<FactionPlayer>(String message) -> {
+                player.sendMessage(message);
+                return true;
+            }
+            case Result.Error<FactionPlayer>(String message, Exception e) -> {
+                SimpleFactions.getPluginLogger().log(Level.SEVERE, message, e);
+                player.sendMessage("Something went wrong while retrieving the owner of the faction.");
+                return true;
+            }
         }
-        else{
-            player.sendMessage(factionPlayer.username());
-        }
-
         return true;
     }
 
     @Override
-    public List<String> tabComplete(CommandSender sender, String[] args){
-        if(args.length < 1 || args[0].isEmpty()) return List.of();
+    public List<String> tabComplete(CommandSender sender, String[] args) {
+        if (args.length < 1 || args[0].isEmpty()) return List.of();
 
-        Pageable<String> pageable = new Pageable<>(0, 20);
-
-        return factionApplication.getFactionNames(pageable, args[0]).items();
+        return switch (factionApplication.getFactionNames(new Pageable<>(0, 20), args[0])) {
+            case Result.Success<Pageable<String>>(Pageable<String> factionNames) -> factionNames.items();
+            case Result.Failure<Pageable<String>> failure -> List.of();
+            case Result.Error<Pageable<String>>(String message, Exception e) -> {
+                SimpleFactions.getPluginLogger().log(Level.SEVERE, message, e);
+                yield List.of();
+            }
+        };
     }
 
     @Override

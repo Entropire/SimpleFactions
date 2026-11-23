@@ -5,10 +5,12 @@ import com.entropire.simplefactions.database.DataBaseContext;
 import com.entropire.simplefactions.faction.FactionService;
 import com.entropire.simplefactions.faction.membership.FactionMembershipService;
 import com.entropire.simplefactions.listener.PlayerJoinListener;
+import com.entropire.simplefactions.objects.Result;
 import com.entropire.simplefactions.player.FactionPlayerService;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class SimpleFactions extends JavaPlugin {
@@ -21,7 +23,20 @@ public final class SimpleFactions extends JavaPlugin {
 
         if (!getDataFolder().exists()) getDataFolder().mkdir();
         db = new DataBaseContext(getDataFolder().getAbsolutePath() + "/Simple-Faction.db");
-        db.initSchema();
+
+        switch (db.initSchema()) {
+            case Result.Success<Boolean> success -> {}
+            case Result.Failure<Boolean>(String message) -> {
+                logger.severe("Could not set up the database: " + message);
+                getServer().getPluginManager().disablePlugin(this);
+                return;
+            }
+            case Result.Error<Boolean>(String message, Exception e) -> {
+                logger.log(Level.SEVERE, "Could not set up the database: " + message, e);
+                getServer().getPluginManager().disablePlugin(this);
+                return;
+            }
+        }
 
         FactionService factionService = new FactionService();
         FactionMembershipService factionMembershipService = new FactionMembershipService();

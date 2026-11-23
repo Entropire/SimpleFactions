@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS faction_memberships (
     joined_at INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
 
     PRIMARY KEY (player_uuid, faction_uuid),
+    UNIQUE (player_uuid),
 
     FOREIGN KEY (player_uuid) REFERENCES players(uuid)
     ON DELETE CASCADE,

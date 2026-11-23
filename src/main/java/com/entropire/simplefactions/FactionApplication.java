@@ -1,15 +1,12 @@
 package com.entropire.simplefactions;
 
 import java.util.List;
+import java.util.UUID;
 
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-
+import com.entropire.simplefactions.objects.Result;
 import com.entropire.simplefactions.database.DataBaseContext;
 import com.entropire.simplefactions.faction.Faction;
 import com.entropire.simplefactions.faction.FactionService;
-import com.entropire.simplefactions.faction.exception.FactionNameDuplicateException;
-import com.entropire.simplefactions.faction.exception.FactionOwnerDuplicateException;
 import com.entropire.simplefactions.faction.membership.FactionMembership;
 import com.entropire.simplefactions.faction.membership.FactionMembershipService;
 import com.entropire.simplefactions.faction.membership.Role;
@@ -17,9 +14,9 @@ import com.entropire.simplefactions.objects.Pageable;
 import com.entropire.simplefactions.player.FactionPlayer;
 
 public class FactionApplication {
-    private DataBaseContext db;
-    private FactionService factionService;
-    private FactionMembershipService factionMembershipService;
+    private final DataBaseContext db;
+    private final FactionService factionService;
+    private final FactionMembershipService factionMembershipService;
 
     public FactionApplication(
         DataBaseContext db,
@@ -31,124 +28,65 @@ public class FactionApplication {
         this.factionMembershipService = factionMembershipService;
     }
 
-    public void createFaction(String name, String color, Player player){
-        try{
-            db.transaction(conn -> {
-                FactionMembership membership = factionMembershipService.getByPlayerUuid(conn, player.getUniqueId());
+    public Result<Faction> createFaction(String name, String color, UUID ownerUuid) {
+        return db.transaction(conn -> {
+            Result<FactionMembership> membershipResult = factionMembershipService.getByPlayerUuid(conn, ownerUuid);
+            if (!(membershipResult instanceof Result.Success(var membership))) return membershipResult.propagate();
+            if (membership != null) return new Result.Failure<>("You are already part of a faction!");
 
-                if(membership == null){
-                    Faction faction = factionService.save(conn, new Faction(name, color, player.getUniqueId()));
-                    factionMembershipService.save(conn, new FactionMembership(player.getUniqueId(), faction.uuid(), Role.OWNER, null));
-                    player.sendMessage("Faction created!");
-                }
-                else{
-                    player.sendMessage("You are already part of an faction!");
-                }
+            Result<Faction> factionResult = factionService.save(conn, new Faction(name, color, ownerUuid));
+            if (!(factionResult instanceof Result.Success(var faction))) return factionResult;
 
-                return null;
-            });
-        }
-        catch(FactionOwnerDuplicateException e){
-            player.sendMessage("You already own a faction.");
-        }
-        catch(FactionNameDuplicateException e){
-            player.sendMessage("The name " + name + " is already in use by another faction.");
-        }
-        catch(Exception e){
-            player.sendMessage("Something went wrong while making your faction!");
-            e.printStackTrace();
-        }  
+            Result<Boolean> ownerResult = factionMembershipService.save(conn, new FactionMembership(ownerUuid, faction.uuid(), Role.OWNER, null));
+            if (!ownerResult.isSuccess()) return ownerResult.propagate();
+
+            return new Result.Success<>(faction);
+        });
     }
 
-    public void deleteFaction(Player player){
-        try{
-            db.transaction(conn -> {
-                FactionMembership member = factionMembershipService.getByPlayerUuid(conn, player.getUniqueId());       
-                
-                if(member.role() != Role.OWNER){
-                    player.sendMessage("Only the owner of the faction can delete the faction!");
-                    return null;
-                }
+    public Result<List<UUID>> deleteFaction(UUID ownerUuid) {
+        return db.transaction(conn -> {
+            Result<FactionMembership> memberResult = factionMembershipService.getByPlayerUuid(conn, ownerUuid);
+            if (!(memberResult instanceof Result.Success(var membership))) return memberResult.propagate();
+            if (membership == null) return new Result.Failure<>("You are not in a faction!");
+            if (membership.role() != Role.OWNER) return new Result.Failure<>("Only the owner can delete the faction!");
 
-                List<FactionMembership> members = factionMembershipService.getAllByFactionUuid(conn, member.factionUuid());
-                factionService.delete(conn, member.factionUuid());
+            Result<List<FactionMembership>> membersResult = factionMembershipService.getAllByFactionUuid(conn, membership.factionUuid());
+            if (!(membersResult instanceof Result.Success(var memberships))) return membersResult.propagate();
 
-                for (FactionMembership factionMembership : members) {
-                    Player memberPlayer = Bukkit.getPlayer(factionMembership.playerUuid());
+            Result<Boolean> deleted = factionService.delete(conn, membership.factionUuid());
+            if (!deleted.isSuccess()) return deleted.propagate();
 
-                    if(memberPlayer.getUniqueId() == member.playerUuid()){
-                        memberPlayer.sendMessage("You have deleted your faction.");
-                    }
-                    else{
-                        memberPlayer.sendMessage("Your faction has been deleted!");
-                    }
-                }
-
-                return null;
-            }); 
-        }
-        catch(Exception e){
-            player.sendMessage("Something went wrong while deleting your faction.");
-            e.printStackTrace();
-        }
+            return new Result.Success<>(memberships.stream().map(FactionMembership::playerUuid).toList());
+        });
     }
 
-    public Pageable<Faction> getFactions(Player player, Pageable<Faction> pageable){
-        Pageable<Faction> result = null;
-        
-        try{
-              result = db.transaction(conn -> {
-                List<Faction> factions = factionService.getFactions(conn, pageable);
-                int factionCount = factionService.getFactionsCount(conn);
+    public Result<Pageable<Faction>> getFactions(Pageable<Faction> pageable) {
+        return db.transaction(conn -> {
+            Result<Integer> countResult = factionService.getFactionsCount(conn);
+            if (!(countResult instanceof Result.Success(var factionCount))) return countResult.propagate();
 
-                return new Pageable<Faction>(
-                    factions, 
-                    pageable.currentPage(), 
-                    (factionCount + pageable.itemsPerPage() - 1) / pageable.itemsPerPage(),
-                    pageable.itemsPerPage()
-                );
-            });
-        }
-        catch(Exception e){
-            player.sendMessage("Something went wrong while retrieving the list of factions.");
-            e.printStackTrace();
-        }
-        
-        return result;
+            int maxPages = Math.max(1, (factionCount + pageable.itemsPerPage() - 1) / pageable.itemsPerPage());
+            int page = Math.clamp(pageable.currentPage(), 0, maxPages - 1);
+
+            Result<List<Faction>> factionsResult = factionService.getFactions(conn, new Pageable<>(page, pageable.itemsPerPage()));
+            if (!(factionsResult instanceof Result.Success(var factions))) return factionsResult.propagate();
+
+            return new Result.Success<>(new Pageable<>(factions, page, maxPages, pageable.itemsPerPage()));
+        });
     }
 
-    public FactionPlayer getFactionOwner(Player player, String factionName){
-        FactionPlayer owner = null;
-        try{
-            owner = db.withConnection(conn -> {
-                return factionService.getOwner(conn, factionName);
-            });
-        }
-        catch(Exception e){
-            player.sendMessage("Something went wrong while retrieving the owner of faction: " + factionName + ".");
-            e.printStackTrace();
-        }
-
-        return owner;
+    public Result<FactionPlayer> getFactionOwner(String factionName){
+        return db.withConnection(conn -> factionService.getOwner(conn, factionName));
     }
 
-    public Pageable<String> getFactionNames(Pageable<String> pageable, String contains){
-        Pageable<String> result = null;
-        try {
-            result = db.transaction(conn -> {
-               List<String> factionNames = factionService.getFactionNames(conn, pageable, contains);
-                int factionCount = factionService.getFactionsCount(conn);
+    public Result<Pageable<String>> getFactionNames(Pageable<String> pageable, String contains){
+        // Used for tab completion: only the first page of matches is needed, so no count / page math.
+        return db.withConnection(conn -> {
+            Result<List<String>> factionNamesResult = factionService.getFactionNames(conn, pageable, contains);
+            if (!(factionNamesResult instanceof Result.Success(var factionNames))) return factionNamesResult.propagate();
 
-                return new Pageable<>(
-                        factionNames,
-                        pageable.currentPage(),
-                        (factionCount + pageable.itemsPerPage() - 1) / pageable.itemsPerPage(),
-                        pageable.itemsPerPage()
-                );
-            });
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        return result;
+            return new Result.Success<>(new Pageable<>(factionNames, pageable.currentPage(), 1, pageable.itemsPerPage()));
+        });
     }
 }
