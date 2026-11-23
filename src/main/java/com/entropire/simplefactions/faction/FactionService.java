@@ -34,4 +34,17 @@ public class FactionService {
     public Result<List<String>> getFactionNames(Connection connection, Pageable<String> pageable, String contains){
         return repository.getFactionNames(connection, pageable, contains);
     }
+
+    public Result<Faction> getByName(Connection connection, String factionName){
+        return repository.getByName(connection, factionName);
+    }
+
+    public Result<List<FactionPlayer>> getFactionMembers(Connection connection, String factionName, Pageable<FactionPlayer> pageable){
+        return repository.getFactionMembers(connection, factionName, pageable);
+    }
+
+    public Result<Integer> getFactionMembersCount(Connection connection, String factionName){
+        return repository.getFactionMembersCount(connection, factionName);
+    }
+
 }

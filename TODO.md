@@ -6,7 +6,6 @@ Everything in "BackLog → Parity with old version" is needed before the new ver
 ## BackLog
 
 ### Parity with old version: commands
-- Implement members command with pages (`/f members <FactionName> [page]`)
 - Implement invite command (`/f invite <PlayerName>`, tab-complete online players without a faction)
 - Implement join request command (old: `/f join <FactionName>`, new: `/f request <FactionName>`, tab-complete faction names)
 - Implement accept command for invites and join requests
@@ -22,7 +21,7 @@ Everything in "BackLog → Parity with old version" is needed before the new ver
 - Make `/f` without arguments open the GUI (falls back to help when the GUI is disabled)
 
 ### Parity with old version: faction rules
-- Validate faction names on create (old: letters only, stored lowercase)
+- Validate faction names on create (old: letters only; names are already case-insensitive)
 - Add banned faction names list (old: `bannedNames.yml`; README: `blacklist.yml`) with a setting to turn it on/off
 
 ### Parity with old version: chat & display
@@ -50,7 +49,8 @@ Everything in "BackLog → Parity with old version" is needed before the new ver
 - None known right now
 
 ### Database versions
-- Bump `DataBaseContext.SCHEMA_VERSION` every time `schema.sql` changes in a way old database files can't use
+- Bump `DataBaseContext.SCHEMA_VERSION` only for actual releases, when `schema.sql` changed in a way the previous release's database files can't use
+- Between releases, delete the dev `Simple-Faction.db` after changing `schema.sql` (the version check won't catch it)
 - Add migrations (schema version N → N+1) so upgrading the plugin keeps factions instead of needing `f database reset`
 
 ### New features (in README, not in old version)
@@ -66,7 +66,6 @@ Everything in "BackLog → Parity with old version" is needed before the new ver
 - Implement cashing for JoinRequist table
 
 ## Doing
-- Implement members command
 
 ## Done
 - Create database structure
@@ -105,5 +104,9 @@ Everything in "BackLog → Parity with old version" is needed before the new ver
 - Console command `f database reset [confirm]` that moves the old database to a backup and starts with an empty one
 - Add unit tests for the database version check and reset
 - Add the missing Gradle wrapper jar so `./gradlew` works
+- Implement members command with pages (`/f members <faction name> [page]`, owner listed first, tab-complete faction names)
+- Fix tab completion: `CommandNode.onTabComplete` now calls each command's `tabComplete` (owner and members completion work)
+- Faction names are case-insensitive (`COLLATE NOCASE`): `/f members RED` finds "Red" and "Red"/"RED" can't both exist
+- `/f members` shows the faction's real name (new `getByName` lookup and `FactionMembersPage`)
 
 ## Never Going To Implement

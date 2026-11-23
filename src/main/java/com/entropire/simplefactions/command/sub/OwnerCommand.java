@@ -32,7 +32,7 @@ public class OwnerCommand extends CommandNode {
         }
 
         if(args.length < 1){
-            player.sendMessage("/faction owner <faction name>");
+            player.sendMessage(help(args).build());
             return true;
         }
 
@@ -53,11 +53,11 @@ public class OwnerCommand extends CommandNode {
 
     @Override
     public List<String> tabComplete(CommandSender sender, String[] args) {
-        if (args.length < 1 || args[0].isEmpty()) return List.of();
+        if (args.length != 1 || args[0].isEmpty()) return List.of();
 
         return switch (factionApplication.getFactionNames(new Pageable<>(0, 20), args[0])) {
             case Result.Success<Pageable<String>>(Pageable<String> factionNames) -> factionNames.items();
-            case Result.Failure<Pageable<String>> failure -> List.of();
+            case Result.Failure<Pageable<String>> _ -> List.of();
             case Result.Error<Pageable<String>>(String message, Exception e) -> {
                 SimpleFactions.getPluginLogger().log(Level.SEVERE, message, e);
                 yield List.of();
@@ -67,6 +67,6 @@ public class OwnerCommand extends CommandNode {
 
     @Override
     public ChatMessage help(String[] args) {
-        return new ChatMessage().text("/f owner <FactionName>");
+        return new ChatMessage().text("/f owner <faction name>");
     }
 }

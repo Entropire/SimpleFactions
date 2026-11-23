@@ -31,7 +31,7 @@ public class CreateCommand extends CommandNode{
             return false;
         }
         
-        if(args.length  < 1){
+        if(args.length < 1){
             player.sendMessage(help(args).build());
             return true;
         }

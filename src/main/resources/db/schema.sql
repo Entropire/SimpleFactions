@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS plugin_meta (
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS factions (
     uuid TEXT PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL UNIQUE COLLATE NOCASE,
     color TEXT NOT NULL,
     owner_uuid TEXT NOT NULL,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),

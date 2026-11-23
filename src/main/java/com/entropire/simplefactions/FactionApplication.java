@@ -6,6 +6,7 @@ import java.util.UUID;
 import com.entropire.simplefactions.objects.Result;
 import com.entropire.simplefactions.database.DataBaseContext;
 import com.entropire.simplefactions.faction.Faction;
+import com.entropire.simplefactions.faction.FactionMembersPage;
 import com.entropire.simplefactions.faction.FactionService;
 import com.entropire.simplefactions.faction.membership.FactionMembership;
 import com.entropire.simplefactions.faction.membership.FactionMembershipService;
@@ -86,6 +87,24 @@ public class FactionApplication {
             if (!(factionNamesResult instanceof Result.Success(var factionNames))) return factionNamesResult.propagate();
 
             return new Result.Success<>(new Pageable<>(factionNames, pageable.currentPage(), 1, pageable.itemsPerPage()));
+        });
+    }
+
+    public Result<FactionMembersPage> getFactionMembers(String factionName, Pageable<FactionPlayer> pageable){
+        return db.transaction(conn -> {
+            Result<Faction> factionResult = factionService.getByName(conn, factionName);
+            if (!(factionResult instanceof Result.Success(var faction))) return factionResult.propagate();
+
+            Result<Integer> countResult = factionService.getFactionMembersCount(conn, faction.name());
+            if (!(countResult instanceof Result.Success(var memberCount))) return countResult.propagate();
+
+            int maxPages = Math.max(1, (memberCount + pageable.itemsPerPage() - 1) / pageable.itemsPerPage());
+            int page = Math.clamp(pageable.currentPage(), 0, maxPages - 1);
+
+            Result<List<FactionPlayer>> factionMembersResult = factionService.getFactionMembers(conn, faction.name(), new Pageable<>(page, pageable.itemsPerPage()));
+            if (!(factionMembersResult instanceof Result.Success(var members))) return factionMembersResult.propagate();
+
+            return new Result.Success<>(new FactionMembersPage(faction, new Pageable<>(members, page, maxPages, pageable.itemsPerPage())));
         });
     }
 }

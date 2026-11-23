@@ -3,15 +3,12 @@ package com.entropire.simplefactions.command;
 import java.util.List;
 
 import com.entropire.simplefactions.chat.ChatMessage;
+import com.entropire.simplefactions.command.sub.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.command.CommandSender;
 
 import com.entropire.simplefactions.FactionApplication;
-import com.entropire.simplefactions.command.sub.CreateCommand;
-import com.entropire.simplefactions.command.sub.DeleteCommand;
-import com.entropire.simplefactions.command.sub.ListCommand;
-import com.entropire.simplefactions.command.sub.OwnerCommand;
 
 public class SimpleFactionCommand extends CommandNode {
 
@@ -23,6 +20,7 @@ public class SimpleFactionCommand extends CommandNode {
         register(new DeleteCommand(factionApplication));
         register(new ListCommand(factionApplication));
         register(new OwnerCommand(factionApplication));
+        register(new MembersCommand(factionApplication));
     }
 
     @Override

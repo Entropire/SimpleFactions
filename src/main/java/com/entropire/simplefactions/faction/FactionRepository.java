@@ -150,4 +150,68 @@ public class FactionRepository {
             return new Result.Error<>("Failed to retrieve factions", e);
         }
     }
+
+    public Result<Faction> getByName(Connection connection, String factionName){
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM factions WHERE name = ?")) {
+            preparedStatement.setString(1, factionName);
+            ResultSet rs = preparedStatement.executeQuery();
+
+            if (!rs.next()) {
+                return new Result.Failure<>("There is no faction named " + factionName);
+            }
+
+            return new Result.Success<>(new Faction(
+                    UUID.fromString(rs.getString("uuid")),
+                    rs.getString("name"),
+                    rs.getString("color"),
+                    UUID.fromString(rs.getString("owner_uuid")),
+                    Instant.ofEpochMilli(rs.getLong("created_at")),
+                    rs.getBoolean("is_active"),
+                    Instant.ofEpochMilli(rs.getLong("last_activity"))
+            ));
+        }
+        catch (SQLException e) {
+            return new Result.Error<>("Failed to retrieve faction " + factionName, e);
+        }
+    }
+
+    public Result<List<FactionPlayer>> getFactionMembers(Connection connection, String factionName, Pageable<FactionPlayer> pageable){
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT p.* FROM factions f JOIN faction_memberships m ON m.faction_uuid = f.uuid JOIN players p ON p.uuid = m.player_uuid WHERE f.name = ? ORDER BY m.role = 'OWNER' DESC, p.username LIMIT ? OFFSET ?")){
+            preparedStatement.setString(1, factionName);
+            preparedStatement.setInt(2, pageable.itemsPerPage());
+            preparedStatement.setInt(3, pageable.currentPage() * pageable.itemsPerPage());
+            ResultSet rs = preparedStatement.executeQuery();
+
+            List<FactionPlayer> factionPlayers = new ArrayList<>();
+            while(rs.next()){
+                factionPlayers.add(new FactionPlayer(
+                        UUID.fromString(rs.getString("uuid")),
+                        rs.getString("username"),
+                        ChatMode.valueOf(rs.getString("chat_mode")),
+                        Instant.ofEpochMilli(rs.getLong("last_seen"))
+                ));
+            }
+            return new Result.Success<>(factionPlayers);
+        }
+        catch (SQLException e) {
+            return new Result.Error<>("Failed to retrieve faction Members", e);
+        }
+    }
+
+    public Result<Integer> getFactionMembersCount(Connection connection, String factionName){
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM faction_memberships m JOIN factions f ON f.uuid = m.faction_uuid WHERE f.name = ?")) {
+            preparedStatement.setString(1, factionName);
+            ResultSet rs = preparedStatement.executeQuery();
+
+            int count = 0;
+            while (rs.next()) {
+                count = rs.getInt(1);
+            }
+
+            return new Result.Success<>(count);
+        }
+        catch (SQLException e) {
+            return new Result.Error<>("Failed to retrieve faction members count", e);
+        }
+    }
 }
