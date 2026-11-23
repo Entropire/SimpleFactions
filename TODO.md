@@ -47,14 +47,11 @@ Everything in "BackLog → Parity with old version" is needed before the new ver
 - Implement config file (old `settings.yml`: `enable-gui`, `enable-bannedNames`)
 
 ### Bugs found in current code
-- `/f owner <unknown name>` crashes: `getOwner` returns `Success(null)` and `OwnerCommand` calls `owner.username()` → return a `Failure("There is no faction named X")` instead
-- `JoinRequestRepository.save` calls `setString(2, ...)` twice and never sets parameter 3 → every join request insert fails (second one should be `setString(3, factionUuid)`)
-- `ListCommand` / help command crash on a non-number page argument (`Integer.parseInt`)
-- Help command pagination: `maxPage` uses `size / 2` but shows 10 per page, and `subList` end is clamped to `size - 1` so the last command is never shown
-- `schema.sql` changes don't reach existing databases (`CREATE TABLE IF NOT EXISTS` skips existing tables) → delete the dev `Simple-Faction.db` after schema changes, or add migrations before release
-- `FactionPlayerRepository.saveIfNotExists` uses `ON CONFLICT(uuid) DO NOTHING`, so a player who changes their Minecraft name keeps the old `username` → use `DO UPDATE SET username = excluded.username`
-- `FactionRepository.save` checks for a unique-constraint error on `factions.owner_uuid`, but the schema has no such constraint → add the constraint or remove the check
-- `gradle/wrapper/gradle-wrapper.jar` is missing, so `./gradlew` does not work (regenerate with `gradle wrapper`)
+- None known right now
+
+### Database versions
+- Bump `DataBaseContext.SCHEMA_VERSION` every time `schema.sql` changes in a way old database files can't use
+- Add migrations (schema version N → N+1) so upgrading the plugin keeps factions instead of needing `f database reset`
 
 ### New features (in README, not in old version)
 - Implement info command (`/f info <FactionName>`)
@@ -97,5 +94,16 @@ Everything in "BackLog → Parity with old version" is needed before the new ver
 - Plugin disables itself when the database schema can't be created
 - Fix `getFactionNames` SQL (`name contains ?` → `name LIKE ? || '%'`) so owner tab completion works
 - Add `UNIQUE (player_uuid)` to `faction_memberships` so a player can only be in one faction
+- Fix help command pagination (last command was never shown, page numbers were 0-based) and crash on a non-number page
+- Fix `/f list` crashing on a non-number page argument
+- Fix `/f owner <unknown name>` crashing (`getOwner` now returns a `Failure` when no faction has that name)
+- Fix `JoinRequestRepository.save` setting parameter 2 twice instead of parameter 3
+- Update a player's `username` on join so name changes are picked up
+- Add `UNIQUE (owner_uuid)` to `factions` so a player can only own one faction
+- Track the schema version and plugin version in the database file (`plugin_meta` table, `DataBaseContext.SCHEMA_VERSION`)
+- Incompatible database file: console warning with 2 options (use the plugin version that made it, or reset), plugin waits in safe mode
+- Console command `f database reset [confirm]` that moves the old database to a backup and starts with an empty one
+- Add unit tests for the database version check and reset
+- Add the missing Gradle wrapper jar so `./gradlew` works
 
 ## Never Going To Implement

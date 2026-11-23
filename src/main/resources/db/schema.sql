@@ -1,6 +1,14 @@
 PRAGMA foreign_keys = ON;
 
 -- =============================================================================
+-- PLUGIN META TABLE
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS plugin_meta (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
+-- =============================================================================
 -- FACTIONS TABLE
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS factions (
@@ -10,8 +18,10 @@ CREATE TABLE IF NOT EXISTS factions (
     owner_uuid TEXT NOT NULL,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
     is_active INTEGER DEFAULT 1,
-    last_activity INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000)
-);
+    last_activity INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
+
+    UNIQUE(owner_uuid)
+    );
 
 CREATE INDEX IF NOT EXISTS idx_factions_name ON factions(name);
 CREATE INDEX IF NOT EXISTS idx_factions_owner ON factions(owner_uuid);

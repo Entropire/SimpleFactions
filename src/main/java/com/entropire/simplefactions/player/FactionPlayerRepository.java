@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public class FactionPlayerRepository {
     public Result<Boolean> saveIfNotExists(Connection connection, FactionPlayer player) {
-        try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO players (uuid, username) VALUES (?, ?) on CONFLICT(uuid) DO NOTHING")) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO players (uuid, username) VALUES (?, ?) on CONFLICT(uuid) DO UPDATE SET username = excluded.username")) {
             preparedStatement.setString(1, player.uuid().toString());
             preparedStatement.setString(2, player.username());
             preparedStatement.execute();

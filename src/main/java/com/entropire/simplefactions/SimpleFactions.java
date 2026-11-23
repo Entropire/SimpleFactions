@@ -1,19 +1,25 @@
 package com.entropire.simplefactions;
 
+import com.entropire.simplefactions.command.DatabaseResetCommand;
 import com.entropire.simplefactions.command.SimpleFactionCommand;
 import com.entropire.simplefactions.database.DataBaseContext;
+import com.entropire.simplefactions.database.SchemaStatus;
 import com.entropire.simplefactions.faction.FactionService;
 import com.entropire.simplefactions.faction.membership.FactionMembershipService;
 import com.entropire.simplefactions.listener.PlayerJoinListener;
 import com.entropire.simplefactions.objects.Result;
 import com.entropire.simplefactions.player.FactionPlayerService;
 
+import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class SimpleFactions extends JavaPlugin {
+    private static final String DATABASE_FILE_NAME = "Simple-Faction.db";
+
     private static Logger logger;
     private DataBaseContext db;
 
@@ -22,36 +28,79 @@ public final class SimpleFactions extends JavaPlugin {
         logger = getLogger();
 
         if (!getDataFolder().exists()) getDataFolder().mkdir();
-        db = new DataBaseContext(getDataFolder().getAbsolutePath() + "/Simple-Faction.db");
+        db = new DataBaseContext(databaseFile().getAbsolutePath());
 
-        switch (db.initSchema()) {
-            case Result.Success<Boolean> success -> {}
-            case Result.Failure<Boolean>(String message) -> {
+        switch (db.initSchema(pluginVersion())) {
+            case Result.Success<SchemaStatus>(SchemaStatus.Ready _) -> startPlugin();
+            case Result.Success<SchemaStatus>(SchemaStatus.Incompatible incompatible) -> startSafeMode(incompatible);
+            case Result.Failure<SchemaStatus>(String message) -> {
                 logger.severe("Could not set up the database: " + message);
                 getServer().getPluginManager().disablePlugin(this);
-                return;
             }
-            case Result.Error<Boolean>(String message, Exception e) -> {
+            case Result.Error<SchemaStatus>(String message, Exception e) -> {
                 logger.log(Level.SEVERE, "Could not set up the database: " + message, e);
                 getServer().getPluginManager().disablePlugin(this);
-                return;
             }
         }
+    }
 
+    public void startPlugin() {
         FactionService factionService = new FactionService();
         FactionMembershipService factionMembershipService = new FactionMembershipService();
         FactionPlayerService playerService = new FactionPlayerService();
 
         FactionApplication factionApplication = new FactionApplication(db, factionService, factionMembershipService);
 
-        getCommand("faction").setExecutor(new SimpleFactionCommand(factionApplication));
-        getCommand("faction").setTabCompleter(new SimpleFactionCommand(factionApplication));
+        SimpleFactionCommand factionCommand = new SimpleFactionCommand(factionApplication);
+        PluginCommand command = getCommand("faction");
+        command.setExecutor(factionCommand);
+        command.setTabCompleter(factionCommand);
 
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(db, playerService), this);
     }
 
-    @Override
-    public void onDisable() {
+    private void startSafeMode(SchemaStatus.Incompatible incompatible) {
+        DatabaseResetCommand resetCommand = new DatabaseResetCommand(db, pluginVersion(), databasePath(), this::startPlugin);
+        PluginCommand command = getCommand("faction");
+        command.setExecutor(resetCommand);
+        command.setTabCompleter(resetCommand);
+
+        String createdBy = incompatible.createdByPluginVersion() == null
+                ? "an older development build of SimpleFactions (made before database versions were tracked)"
+                : "SimpleFactions " + incompatible.createdByPluginVersion();
+        String keepDataOption = incompatible.createdByPluginVersion() == null
+                ? "use the SimpleFactions version that created this file instead of this jar."
+                : "use SimpleFactions " + incompatible.createdByPluginVersion() + " instead of this jar.";
+
+        String line = "=".repeat(72);
+        logger.warning(line);
+        logger.warning("SimpleFactions " + pluginVersion() + " can't use the existing database file:");
+        logger.warning("    " + databasePath());
+        logger.warning("That file was created by " + createdBy + ".");
+        logger.warning("It has database version " + incompatible.foundSchemaVersion()
+                + ", this version of SimpleFactions needs database version " + DataBaseContext.SCHEMA_VERSION + ".");
+        logger.warning("");
+        logger.warning("You have 2 options:");
+        logger.warning("  1. Keep your factions: " + keepDataOption);
+        logger.warning("  2. Start over with an empty database: run this command in the console:");
+        logger.warning("         f database reset");
+        logger.warning("     WARNING: this removes ALL current factions, members, invites and join requests!");
+        logger.warning("     The old database file is kept as a backup next to the new one.");
+        logger.warning("");
+        logger.warning("SimpleFactions is disabled until you choose one of these options.");
+        logger.warning(line);
+    }
+
+    private File databaseFile() {
+        return new File(getDataFolder(), DATABASE_FILE_NAME);
+    }
+
+    private String databasePath() {
+        return databaseFile().getPath().replace('\\', '/');
+    }
+
+    private String pluginVersion() {
+        return getPluginMeta().getVersion();
     }
 
     public static Logger getPluginLogger() {

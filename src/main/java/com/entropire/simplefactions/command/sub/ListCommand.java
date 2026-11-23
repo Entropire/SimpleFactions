@@ -32,8 +32,14 @@ public class ListCommand extends CommandNode {
             sender.sendMessage("Only players can preform this command!");
             return false;
         }
-        
-        int page = args.length == 0 ? 0 : Math.max(0, Integer.parseInt(args[0]) - 1);
+
+        int pageRequest;
+        try{
+            pageRequest = Integer.parseInt(args[0]);
+        }catch (Exception _){
+            pageRequest = 0;
+        }
+        int page = args.length == 0 ? 0 : Math.max(0, pageRequest - 1);
 
         Pageable<Faction> factionsPage;
         switch (factionApplication.getFactions(new Pageable<>(page, 10))) {

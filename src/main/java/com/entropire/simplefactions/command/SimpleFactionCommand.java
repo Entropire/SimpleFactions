@@ -15,6 +15,8 @@ import com.entropire.simplefactions.command.sub.OwnerCommand;
 
 public class SimpleFactionCommand extends CommandNode {
 
+    private static final int HELP_PAGE_SIZE = 10;
+
     public SimpleFactionCommand(FactionApplication factionApplication){
         super("simplefactions", "");
         register(new CreateCommand(factionApplication));
@@ -36,19 +38,27 @@ public class SimpleFactionCommand extends CommandNode {
     @Override
     public ChatMessage help(String[] args) {
         List<CommandNode> children = getChildren();
-        int page = 0;
-        int maxPage = (int)Math.ceil((double) children.size() / 2);
+        int maxPage = Math.max(1, (children.size() + HELP_PAGE_SIZE - 1) / HELP_PAGE_SIZE);
+        int page = Math.clamp(parsePage(args) - 1, 0, maxPage - 1);
 
-        if(args.length > 0){
-            page = Math.clamp(Integer.parseInt(args[0]) - 1, 0, maxPage - 1);
-        }
+        int from = page * HELP_PAGE_SIZE;
+        int to = Math.min(from + HELP_PAGE_SIZE, children.size());
 
         return new ChatMessage()
-                .textIf(children.size() > 10, "Use /help [n] to get page n of help")
-                .textIf(children.size() > 10, "(Page " + page + "/" + maxPage)
-                .list(children.subList(Math.clamp(page * 10L, 0, children.size() - 1), Math.clamp((page * 10L) + 10, 0, children.size() - 1))
+                .textIf(maxPage > 1, "Use /f help [n] to get page n of help")
+                .textIf(maxPage > 1, "(Page " + (page + 1) + "/" + maxPage + ")")
+                .list(children.subList(from, to)
                         .stream()
                         .map(commandNode -> "/f " + commandNode.getCommandName() + " - " + commandNode.getCommandDescription())
                         .toArray(String[]::new));
+    }
+
+    private static int parsePage(String[] args) {
+        if (args.length == 0) return 1;
+        try {
+            return Integer.parseInt(args[0]);
+        } catch (NumberFormatException e) {
+            return 1;
+        }
     }
 }

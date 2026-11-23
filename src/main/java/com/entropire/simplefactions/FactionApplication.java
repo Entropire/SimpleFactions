@@ -81,7 +81,6 @@ public class FactionApplication {
     }
 
     public Result<Pageable<String>> getFactionNames(Pageable<String> pageable, String contains){
-        // Used for tab completion: only the first page of matches is needed, so no count / page math.
         return db.withConnection(conn -> {
             Result<List<String>> factionNamesResult = factionService.getFactionNames(conn, pageable, contains);
             if (!(factionNamesResult instanceof Result.Success(var factionNames))) return factionNamesResult.propagate();

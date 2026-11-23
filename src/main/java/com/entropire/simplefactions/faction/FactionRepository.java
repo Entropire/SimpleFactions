@@ -120,7 +120,11 @@ public class FactionRepository {
                 );
             }
 
-            return new Result.Success<>(owner);
+            if(owner == null){
+                return new Result.Failure<>("There is no faction named " + factionName);
+            }else{
+                return new Result.Success<>(owner);
+            }
         }
         catch (SQLException e) {
             return new Result.Error<>("Failed to retrieve owner of faction", e);
