@@ -71,4 +71,14 @@ public class FactionMembershipRepository {
             return new Result.Error<>("Failed to retrieve faction membership", e);
         }
     }
+
+    public Result<Boolean> deleteByPlayerUuid(Connection connection, UUID playerUuid) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM faction_memberships Where player_uuid = ?")) {
+            preparedStatement.setString(1, playerUuid.toString());
+            return new Result.Success<>(preparedStatement.executeUpdate() > 0);
+        }
+        catch (SQLException e) {
+            return new Result.Error<>("Failed to delete faction membership", e);
+        }
+    }
 }

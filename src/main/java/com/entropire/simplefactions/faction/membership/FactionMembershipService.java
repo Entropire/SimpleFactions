@@ -20,4 +20,8 @@ public class FactionMembershipService {
     public Result<List<FactionMembership>> getAllByFactionUuid(Connection connection, UUID uuid) {
         return repository.getAllByFactionUuid(connection, uuid);
     }
+
+    public Result<Boolean> deleteByPlayerUuid(Connection connection, UUID playerUuid) {
+        return repository.deleteByPlayerUuid(connection, playerUuid);
+    }
 }

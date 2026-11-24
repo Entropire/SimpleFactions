@@ -11,7 +11,6 @@ Everything in "BackLog → Parity with old version" is needed before the new ver
 - Implement accept command for invites and join requests
 - Implement decline command for invites and join requests (notify the other side)
 - Implement expiry of invites/join requests (old: 30 seconds; use `expires_at` + a cleanup task)
-- Implement kick command (owner only, cannot kick self, notify kicked player if online, tab-complete members)
 - Implement modify command group (`/f modify name|color|owner`)
 - Implement modify name command (same validation as create)
 - Implement modify color command (tab-complete colors; decide between old named colors and new hex colors)
@@ -64,7 +63,7 @@ Everything in "BackLog → Parity with old version" is needed before the new ver
 - Implement cashing for JoinRequist table
 
 ## Doing
-- Implement leave command (owner cannot leave)
+- Implement kick command (owner only, cannot kick self, notify kicked player if online, tab-complete members)
 
 ## Done
 - Create database structure
@@ -109,5 +108,6 @@ Everything in "BackLog → Parity with old version" is needed before the new ver
 - `/f members` shows the faction's real name (new `getByName` lookup and `FactionMembersPage`)
 - Make `/f owner` without a faction name show the owner of your own faction
 - Make `/f member` without a faction name show the members of your own faction
+- Implement leave command (owner cannot leave)
 
 ## Never Going To Implement

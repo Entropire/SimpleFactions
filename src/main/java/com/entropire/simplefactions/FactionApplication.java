@@ -1,5 +1,6 @@
 package com.entropire.simplefactions;
 
+import java.sql.Connection;
 import java.util.List;
 import java.util.UUID;
 
@@ -137,5 +138,16 @@ public class FactionApplication {
         if (!(membersResult instanceof Result.Success(var members))) return membersResult.propagate();
 
         return new Result.Success<>(new FactionMembersPage(faction, new Pageable<>(members, page, maxPages, pageable.itemsPerPage())));
+    }
+
+    public Result<Boolean> leaveFaction(UUID playerUuid) {
+        return db.transaction(conn -> {
+            Result<FactionMembership> memberResult = factionMembershipService.getByPlayerUuid(conn, playerUuid);
+            if(!(memberResult instanceof Result.Success(var member))) return memberResult.propagate();
+            if (member == null) return new Result.Failure<>("You are not part of a faction!");
+            if(member.role() == Role.OWNER) return new Result.Failure<>("The owner can't leave the faction. Transfer ownership or delete the faction instead.");
+
+            return factionMembershipService.deleteByPlayerUuid(conn, playerUuid);
+        });
     }
 }
