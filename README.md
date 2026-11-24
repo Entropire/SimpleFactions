@@ -115,6 +115,10 @@ The API allows other plugins to interact with Simple Factions without needing to
 
 For API documentation and examples, see [API Documentation](). For any questions about the API you can always contact us in the [Discord server](https://discord.com/invite/AwA7mXV8qba).
 
+<h2 id="roadmap">🗺️ Roadmap</h2>
+
+Want to know what's planned for the next release? See the **[Simple Factions project board](https://github.com/users/Entropire/projects/5)** for everything that's done, in progress, and still to do.
+
 <h2 id="support">💬 Support</h2>
 
 Need help, found a bug, or have a suggestion?
