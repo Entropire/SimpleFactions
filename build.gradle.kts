@@ -29,7 +29,7 @@ java {
 }
 
 val testServers = mapOf(
-    "26.1.1" to 25,
+    "26.3" to 25,
     "1.21.11" to 21,
     "1.20.4" to 17,
     "1.19.4" to 17,
@@ -135,7 +135,7 @@ bundledSqliteDrivers.forEach { (minecraftVersion, driverVersion) ->
 
 tasks {
     runServer {
-        minecraftVersion("26.1.1")
+        minecraftVersion("26.3")
         javaLauncher = project.javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
         jvmArgs("-Xms2G", "-Xmx2G")
     }

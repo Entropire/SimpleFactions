@@ -3,7 +3,7 @@
 
 [![Release v3.0.0](https://img.shields.io/badge/Release-v3.0.0-darkgreen?style=flat-square)](https://modrinth.com/plugin/simple-factions/version/3.0.0)
 [![Installs 2.5k](https://img.shields.io/badge/Installs-2.5k-brightgreen?style=flat-square)](https://modrinth.com/plugin/simple-factions)
-[![Minecraft 1.17 - 26.1](https://img.shields.io/badge/Minecraft-1.17%20--%2026.1-orange?style=flat-square\&logo=minecraft)](https://minecraft.net/)
+[![Minecraft 1.17 - 26.3](https://img.shields.io/badge/Minecraft-1.17%20--%2026.3-orange?style=flat-square\&logo=minecraft)](https://minecraft.net/)
 [![Spigot and Paper Server](https://img.shields.io/badge/Server-Spigot%20%7C%20Paper-blue?style=flat-square)](#requirements)
 [![Join Discord](https://img.shields.io/badge/Discord-Join%20Server-5865F2?style=flat-square\&logo=discord)](https://discord.com/invite/AwA7mXV8qba)
 [![GPL 3.0 License](https://img.shields.io/badge/License-GPL_3.0-blue?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0)
@@ -44,8 +44,8 @@ It's designed to be lightweight and accessible for both players and server owner
 
 <h2 id="requirements">📋 Requirements</h2>
 
-* **Minecraft:** 1.17 up to and including 26.1.
-* **Java:** whatever your Minecraft version needs (16 for 1.17, 17 for 1.18 - 1.20.4, 21 for 1.20.5 - 1.21, 25 for 26.1).
+* **Minecraft:** 1.17 up to and including 26.3.
+* **Java:** whatever your Minecraft version needs (16 for 1.17, 17 for 1.18 - 1.20.4, 21 for 1.20.5 - 1.21, 25 for 26.1 and newer).
 
 | Server software                                                  | Support                                                                                          |
 | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
