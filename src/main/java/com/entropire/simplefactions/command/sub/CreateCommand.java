@@ -7,7 +7,6 @@ import com.entropire.simplefactions.SimpleFactions;
 import com.entropire.simplefactions.chat.ChatMessage;
 import com.entropire.simplefactions.faction.Faction;
 import com.entropire.simplefactions.objects.Result;
-import it.unimi.dsi.fastutil.ints.IntLists;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 

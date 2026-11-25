@@ -34,7 +34,7 @@ public final class SimpleFactions extends JavaPlugin {
         db = new DataBaseContext(databaseFile().getAbsolutePath());
 
         switch (db.initSchema(pluginVersion())) {
-            case Result.Success<SchemaStatus>(SchemaStatus.Ready _) -> startPlugin();
+            case Result.Success<SchemaStatus>(SchemaStatus.Ready ready) -> startPlugin();
             case Result.Success<SchemaStatus>(SchemaStatus.Incompatible incompatible) -> startSafeMode(incompatible);
             case Result.Failure<SchemaStatus>(String message) -> {
                 logger.severe("Could not set up the database: " + message);

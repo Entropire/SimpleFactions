@@ -36,7 +36,7 @@ public class ListCommand extends CommandNode {
         int pageRequest;
         try{
             pageRequest = Integer.parseInt(args[0]);
-        }catch (Exception _){
+        }catch (Exception e){
             pageRequest = 0;
         }
         int page = args.length == 0 ? 0 : Math.max(0, pageRequest - 1);
