@@ -5,16 +5,16 @@ import java.util.UUID;
 
 public record Faction(
         UUID uuid,
-        String name,
+        FactionName name,
         String color,
         UUID ownerUUID,
         Instant createdAt,
         boolean isActive,
         Instant lastActivity
 ) {
-    public Faction(String name, String color, UUID ownerUUID) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("name cannot be null or blank");
+    public Faction(FactionName name, String color, UUID ownerUUID) {
+        if (name == null) {
+            throw new IllegalArgumentException("name cannot be null");
         }
 
         if (color == null || color.isBlank() || !color.matches("^#[a-fA-F0-9]{6}$")) {

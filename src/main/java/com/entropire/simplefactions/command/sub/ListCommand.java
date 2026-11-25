@@ -65,7 +65,7 @@ public class ListCommand extends CommandNode {
                 )
         )
         .textIf(factionsPage.maxPages() > 1, "Use /f list [n] to get page n of list").setColor(TextColor.color(0xFFD166))
-        .list(factionsPage.items().stream().map(Faction::name).toList().toArray(String[]::new))
+        .list(factionsPage.items().stream().map(faction -> faction.name().value()).toArray(String[]::new))
         .title(null);
 
         sender.sendMessage(message.build());

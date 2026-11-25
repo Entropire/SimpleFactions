@@ -31,7 +31,7 @@ public class FactionRepository {
 
         try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO factions (uuid, name, color, owner_uuid) VALUES (?, ?, ?, ?)")) {
             preparedStatement.setString(1, created.uuid().toString());
-            preparedStatement.setString(2, faction.name());
+            preparedStatement.setString(2, faction.name().value());
             preparedStatement.setString(3, faction.color());
             preparedStatement.setString(4, faction.ownerUUID().toString());
             preparedStatement.executeUpdate();
@@ -190,7 +190,7 @@ public class FactionRepository {
     private static Faction mapFaction(ResultSet rs) throws SQLException {
         return new Faction(
                 UUID.fromString(rs.getString("uuid")),
-                rs.getString("name"),
+                new FactionName(rs.getString("name")),
                 rs.getString("color"),
                 UUID.fromString(rs.getString("owner_uuid")),
                 Instant.ofEpochMilli(rs.getLong("created_at")),

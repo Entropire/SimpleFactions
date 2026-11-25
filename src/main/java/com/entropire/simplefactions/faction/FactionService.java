@@ -28,13 +28,16 @@ public class FactionService {
         this.membershipRepository = membershipRepository;
     }
 
-    public Result<Faction> createFaction(String name, String color, UUID ownerUuid) {
+    public Result<Faction> createFaction(String rawName, String color, UUID ownerUuid) {
+        Result<FactionName> factionNameResult = FactionName.parse(rawName);
+        if (!(factionNameResult instanceof Result.Success(var factionName))) return factionNameResult.propagate();
+
         return db.transaction(conn -> {
             Result<Optional<FactionMembership>> existingResult = membershipRepository.findByPlayerUuid(conn, ownerUuid);
             if (!(existingResult instanceof Result.Success(var existing))) return existingResult.propagate();
             if (existing.isPresent()) return new Result.Failure<>("You are already part of a faction!");
 
-            Result<Faction> factionResult = factionRepository.save(conn, new Faction(name, color, ownerUuid));
+            Result<Faction> factionResult = factionRepository.save(conn, new Faction(factionName, color, ownerUuid));
             if (!(factionResult instanceof Result.Success(var faction))) return factionResult;
 
             Result<Boolean> ownerResult = membershipRepository.save(conn, new FactionMembership(ownerUuid, faction.uuid(), Role.OWNER, null));
@@ -94,7 +97,7 @@ public class FactionService {
             Result<Faction> factionResult = getPlayerFaction(conn, playerUuid);
             if (!(factionResult instanceof Result.Success(var faction))) return factionResult.propagate();
 
-            return Result.require(factionRepository.findOwner(conn, faction.name()), "Could not find the owner of your faction.");
+            return Result.require(factionRepository.findOwner(conn, faction.name().value()), "Could not find the owner of your faction.");
         });
     }
 
@@ -124,13 +127,13 @@ public class FactionService {
     }
 
     private Result<FactionMembersPage> getFactionMembers(Connection conn, Faction faction, Pageable<FactionPlayer> pageable) {
-        Result<Integer> countResult = factionRepository.getFactionMembersCount(conn, faction.name());
+        Result<Integer> countResult = factionRepository.getFactionMembersCount(conn, faction.name().value());
         if (!(countResult instanceof Result.Success(var memberCount))) return countResult.propagate();
 
         int maxPages = Math.max(1, (memberCount + pageable.itemsPerPage() - 1) / pageable.itemsPerPage());
         int page = Math.clamp(pageable.currentPage(), 0, maxPages - 1);
 
-        Result<List<FactionPlayer>> membersResult = factionRepository.getFactionMembers(conn, faction.name(), new Pageable<>(page, pageable.itemsPerPage()));
+        Result<List<FactionPlayer>> membersResult = factionRepository.getFactionMembers(conn, faction.name().value(), new Pageable<>(page, pageable.itemsPerPage()));
         if (!(membersResult instanceof Result.Success(var members))) return membersResult.propagate();
 
         return new Result.Success<>(new FactionMembersPage(faction, new Pageable<>(members, page, maxPages, pageable.itemsPerPage())));
