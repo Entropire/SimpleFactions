@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.UUID;
 
+import com.entropire.simplefactions.objects.Pageable;
 import com.entropire.simplefactions.objects.Result;
 
 public class FactionMembershipService {
@@ -21,7 +22,15 @@ public class FactionMembershipService {
         return repository.getAllByFactionUuid(connection, uuid);
     }
 
-    public Result<Boolean> deleteByPlayerUuid(Connection connection, UUID playerUuid) {
+    public Result<FactionMembership> deleteByPlayerUuid(Connection connection, UUID playerUuid) {
         return repository.deleteByPlayerUuid(connection, playerUuid);
+    }
+
+    public Result<List<String>> getFactionMemberNames(Connection connection, Pageable<String> pageable, UUID factionUuid, String contains) {
+        return repository.getFactionMemberNames(connection, pageable, factionUuid, contains);
+    }
+
+    public Result<FactionMembership> getByPlayerName(Connection connection, String playerName) {
+        return repository.getByPlayerName(connection, playerName);
     }
 }

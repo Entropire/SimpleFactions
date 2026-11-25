@@ -4,6 +4,7 @@ import com.entropire.simplefactions.FactionApplication;
 import com.entropire.simplefactions.SimpleFactions;
 import com.entropire.simplefactions.chat.ChatMessage;
 import com.entropire.simplefactions.command.CommandNode;
+import com.entropire.simplefactions.faction.membership.FactionMembership;
 import com.entropire.simplefactions.objects.Result;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -29,9 +30,9 @@ public class LeaveCommand extends CommandNode {
         }
 
         switch (factionApplication.leaveFaction(player.getUniqueId())) {
-            case Result.Success<Boolean>(Boolean _) -> player.sendMessage("You have left your faction.");
-            case Result.Failure<Boolean>(String message) -> player.sendMessage(message);
-            case Result.Error<Boolean>(String message, Exception e) -> {
+            case Result.Success<FactionMembership>(FactionMembership _) -> player.sendMessage("You have left your faction.");
+            case Result.Failure<FactionMembership>(String message) -> player.sendMessage(message);
+            case Result.Error<FactionMembership>(String message, Exception e) -> {
                 SimpleFactions.getPluginLogger().log(Level.SEVERE, message, e);
                 player.sendMessage("Something went wrong while leaving your faction.");
             }

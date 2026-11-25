@@ -22,6 +22,7 @@ public class SimpleFactionCommand extends CommandNode {
         register(new OwnerCommand(factionApplication));
         register(new MembersCommand(factionApplication));
         register(new LeaveCommand(factionApplication));
+        register(new KickCommand(factionApplication));
     }
 
     @Override

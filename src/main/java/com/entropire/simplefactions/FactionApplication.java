@@ -140,7 +140,7 @@ public class FactionApplication {
         return new Result.Success<>(new FactionMembersPage(faction, new Pageable<>(members, page, maxPages, pageable.itemsPerPage())));
     }
 
-    public Result<Boolean> leaveFaction(UUID playerUuid) {
+    public Result<FactionMembership> leaveFaction(UUID playerUuid) {
         return db.transaction(conn -> {
             Result<FactionMembership> memberResult = factionMembershipService.getByPlayerUuid(conn, playerUuid);
             if(!(memberResult instanceof Result.Success(var member))) return memberResult.propagate();
@@ -148,6 +148,33 @@ public class FactionApplication {
             if(member.role() == Role.OWNER) return new Result.Failure<>("The owner can't leave the faction. Transfer ownership or delete the faction instead.");
 
             return factionMembershipService.deleteByPlayerUuid(conn, playerUuid);
+        });
+    }
+
+    public Result<Pageable<String>> getFactionMemberNames(Pageable<String> pageable, UUID playerUuid, String contains) {
+        return db.transaction(conn -> {
+            Result<Faction>  factionResult = getPlayerFaction(conn, playerUuid);
+            if (!(factionResult instanceof Result.Success(var faction))) return factionResult.propagate();
+
+            Result<List<String>> factionMemberNamesResult = factionMembershipService.getFactionMemberNames(conn, pageable, faction.uuid(), contains);
+            if (!(factionMemberNamesResult instanceof Result.Success(var factionMemberNames))) return factionMemberNamesResult.propagate();
+
+            return new Result.Success<>(new Pageable<>(factionMemberNames, pageable.currentPage(), 1, pageable.itemsPerPage()));
+        });
+    }
+
+    public Result<FactionMembership> kickFactionMember(UUID playerUuid, String userName){
+        return db.transaction(conn -> {
+           Result<FactionMembership> membershipResult = factionMembershipService.getByPlayerUuid(conn, playerUuid);
+           if(!(membershipResult instanceof Result.Success(var membership))) return membershipResult.propagate();
+           if (membership == null || membership.role() != Role.OWNER) return  new Result.Failure<>("You must be the owner to kick somebody from the faction!");
+
+           Result<FactionMembership> kickMembershipResult = factionMembershipService.getByPlayerName(conn, userName);
+           if (!(kickMembershipResult instanceof Result.Success(var kickMembership))) return kickMembershipResult.propagate();
+           if (kickMembership == null || !kickMembership.factionUuid().equals(membership.factionUuid())) return new Result.Failure<>(userName + " is not part of your faction!");
+           if (kickMembership.playerUuid().equals(playerUuid)) return new Result.Failure<>("You can't kick yourself. Transfer ownership or delete the faction instead.");
+
+           return factionMembershipService.deleteByPlayerUuid(conn, kickMembership.playerUuid());
         });
     }
 }
