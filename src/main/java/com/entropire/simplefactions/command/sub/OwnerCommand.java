@@ -52,7 +52,7 @@ public class OwnerCommand extends CommandNode {
 
         return switch (factionService.getFactionNames(new Pageable<>(0, 20), args[0])) {
             case Result.Success<Pageable<String>>(Pageable<String> factionNames) -> factionNames.items();
-            case Result.Failure<Pageable<String>> _ -> List.of();
+            case Result.Failure<Pageable<String>> failure -> List.of();
             case Result.Error<Pageable<String>>(String message, Exception e) -> {
                 SimpleFactions.getPluginLogger().log(Level.SEVERE, message, e);
                 yield List.of();

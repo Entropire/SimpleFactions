@@ -63,7 +63,7 @@ public class KickCommand extends CommandNode {
             case Result.Success<Pageable<String>>(Pageable<String> memberNames) -> memberNames.items().stream()
                     .filter(name -> !name.equalsIgnoreCase(player.getName()))
                     .toList();
-            case Result.Failure<Pageable<String>> _ -> List.of();
+            case Result.Failure<Pageable<String>> failure -> List.of();
             case Result.Error<Pageable<String>>(String message, Exception e) -> {
                 SimpleFactions.getPluginLogger().log(Level.SEVERE, message, e);
                 yield List.of();

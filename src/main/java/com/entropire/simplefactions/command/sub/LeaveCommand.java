@@ -30,7 +30,7 @@ public class LeaveCommand extends CommandNode {
         }
 
         switch (membershipService.leaveFaction(player.getUniqueId())) {
-            case Result.Success<FactionMembership>(FactionMembership _) -> player.sendMessage("You have left your faction.");
+            case Result.Success<FactionMembership>(FactionMembership left) -> player.sendMessage("You have left your faction.");
             case Result.Failure<FactionMembership>(String message) -> player.sendMessage(message);
             case Result.Error<FactionMembership>(String message, Exception e) -> {
                 SimpleFactions.getPluginLogger().log(Level.SEVERE, message, e);
