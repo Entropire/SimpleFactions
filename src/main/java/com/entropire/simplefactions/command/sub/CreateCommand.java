@@ -42,7 +42,7 @@ public class CreateCommand extends CommandNode{
 
         switch (result) {
             case Result.Success<Faction>(Faction faction) ->
-                    player.sendMessage("Created faction " + faction.name() + ".");
+                    player.sendMessage("Created faction " + faction.name().value() + ".");
             case Result.Failure<Faction>(String message) ->
                     player.sendMessage(message);
             case Result.Error<Faction>(String message, Exception e) -> {

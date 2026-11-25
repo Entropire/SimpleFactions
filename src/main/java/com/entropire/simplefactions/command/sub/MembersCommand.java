@@ -46,7 +46,7 @@ public class MembersCommand extends CommandNode {
         Pageable<FactionPlayer> factionPlayerPage;
         switch (result) {
             case Result.Success<FactionMembersPage>(FactionMembersPage value) -> {
-                factionName = value.faction().name();
+                factionName = value.faction().name().value();
                 factionPlayerPage = value.members();
             }
             case Result.Failure<FactionMembersPage>(String message) -> {
