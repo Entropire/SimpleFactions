@@ -53,7 +53,8 @@ It's designed to be lightweight and accessible for both players and server owner
 | Paper and Paper forks (Purpur, Pufferfish, ...)                  | Supported                                                                                        |
 | Folia (1.19.4 and newer)                                         | Supported                                                                                        |
 | Hybrid servers (Mohist, Arclight, ...)                           | Soft-supported: expected to work but not tested. [Open an issue](https://github.com/Entropire/SimpleFactions/issues) if something doesn't work. |
-| Proxies (Velocity, BungeeCord), Fabric, NeoForge, Sponge         | Not supported                                                                                    |
+| Networks behind a proxy (Velocity, BungeeCord)                   | Per-server factions: install Simple Factions on each backend server, not on the proxy. Every server has its own factions; network-wide factions shared between servers are not supported. |
+| Fabric, NeoForge, Sponge                                         | Not supported                                                                                    |
 
 <h2 id="installation">🚀 Installation</h2>
 
