@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class FactionRepository {
@@ -19,13 +20,13 @@ public class FactionRepository {
         UUID uuid = faction.uuid() == null ? UUID.randomUUID() : faction.uuid();
 
         Faction created = new Faction(
-            uuid, 
-            faction.name(), 
+            uuid,
+            faction.name(),
             faction.color(),
             faction.ownerUUID(),
             null,
             true,
-            null 
+            null
             );
 
         try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO factions (uuid, name, color, owner_uuid) VALUES (?, ?, ?, ?)")) {
@@ -66,23 +67,16 @@ public class FactionRepository {
         try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM factions ORDER BY last_activity DESC LIMIT ? OFFSET ?")) {
             preparedStatement.setInt(1, pageable.itemsPerPage());
             preparedStatement.setInt(2, pageable.currentPage() * pageable.itemsPerPage());
-            ResultSet rs = preparedStatement.executeQuery();
 
-            List<Faction> factions = new ArrayList<>();
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+                List<Faction> factions = new ArrayList<>();
 
-            while(rs.next()){
-                factions.add(new Faction(
-                    UUID.fromString(rs.getString("uuid")),
-                    rs.getString("name"),
-                    rs.getString("color"),
-                    UUID.fromString(rs.getString("owner_uuid")),
-                    Instant.ofEpochMilli(rs.getLong("created_at")),
-                    rs.getBoolean("is_active"),
-                    Instant.ofEpochMilli(rs.getLong("last_activity"))
-                ));
+                while (rs.next()) {
+                    factions.add(mapFaction(rs));
+                }
+
+                return new Result.Success<>(factions);
             }
-
-            return new Result.Success<>(factions);
         }
         catch (SQLException e) {
             return new Result.Error<>("Failed to retrieve factions", e);
@@ -90,40 +84,21 @@ public class FactionRepository {
     }
 
     public Result<Integer> getFactionsCount(Connection connection){
-        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM factions")) {
-            ResultSet rs = preparedStatement.executeQuery();
-            
-            int count = 0;
-            while (rs.next()) {
-                count = rs.getInt(1);
-            }
-
-            return new Result.Success<>(count);
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM factions");
+             ResultSet rs = preparedStatement.executeQuery()) {
+            return new Result.Success<>(rs.next() ? rs.getInt(1) : 0);
         }
         catch (SQLException e) {
             return new Result.Error<>("Failed to retrieve faction count", e);
         }
     }
 
-    public Result<FactionPlayer> getOwner(Connection connection, String factionName){
-      try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT p.* from factions f JOIN players p ON p.uuid = f.owner_uuid WHERE f.name = ?")) {
-        preparedStatement.setString(1, factionName);    
-        ResultSet rs = preparedStatement.executeQuery();
-            
-            FactionPlayer owner = null;
-            while (rs.next()) {
-                owner = new FactionPlayer(
-                    UUID.fromString(rs.getString("uuid")), 
-                    rs.getString("username"), 
-                    ChatMode.valueOf(rs.getString("chat_mode")), 
-                    Instant.ofEpochMilli(rs.getLong("last_seen"))
-                );
-            }
+    public Result<Optional<FactionPlayer>> findOwner(Connection connection, String factionName){
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT p.* FROM factions f JOIN players p ON p.uuid = f.owner_uuid WHERE f.name = ?")) {
+            preparedStatement.setString(1, factionName);
 
-            if(owner == null){
-                return new Result.Failure<>("There is no faction named " + factionName);
-            }else{
-                return new Result.Success<>(owner);
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+                return new Result.Success<>(rs.next() ? Optional.of(mapPlayer(rs)) : Optional.empty());
             }
         }
         catch (SQLException e) {
@@ -136,42 +111,45 @@ public class FactionRepository {
             preparedStatement.setString(1, contains);
             preparedStatement.setInt(2, pageable.itemsPerPage());
             preparedStatement.setInt(3, pageable.currentPage() * pageable.itemsPerPage());
-            ResultSet rs = preparedStatement.executeQuery();
 
-            List<String> factionNames = new ArrayList<>();
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+                List<String> factionNames = new ArrayList<>();
 
-            while(rs.next()){
-                factionNames.add(rs.getString("name"));
+                while (rs.next()) {
+                    factionNames.add(rs.getString("name"));
+                }
+
+                return new Result.Success<>(factionNames);
             }
-
-            return new Result.Success<>(factionNames);
         }
         catch (SQLException e) {
             return new Result.Error<>("Failed to retrieve factions", e);
         }
     }
 
-    public Result<Faction> getByName(Connection connection, String factionName){
+    public Result<Optional<Faction>> findByName(Connection connection, String factionName){
         try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM factions WHERE name = ?")) {
             preparedStatement.setString(1, factionName);
-            ResultSet rs = preparedStatement.executeQuery();
 
-            if (!rs.next()) {
-                return new Result.Failure<>("There is no faction named " + factionName);
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+                return new Result.Success<>(rs.next() ? Optional.of(mapFaction(rs)) : Optional.empty());
             }
-
-            return new Result.Success<>(new Faction(
-                    UUID.fromString(rs.getString("uuid")),
-                    rs.getString("name"),
-                    rs.getString("color"),
-                    UUID.fromString(rs.getString("owner_uuid")),
-                    Instant.ofEpochMilli(rs.getLong("created_at")),
-                    rs.getBoolean("is_active"),
-                    Instant.ofEpochMilli(rs.getLong("last_activity"))
-            ));
         }
         catch (SQLException e) {
             return new Result.Error<>("Failed to retrieve faction " + factionName, e);
+        }
+    }
+
+    public Result<Optional<Faction>> findByUuid(Connection connection, UUID factionUuid) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM factions WHERE uuid = ?")) {
+            preparedStatement.setString(1, factionUuid.toString());
+
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+                return new Result.Success<>(rs.next() ? Optional.of(mapFaction(rs)) : Optional.empty());
+            }
+        }
+        catch (SQLException e) {
+            return new Result.Error<>("Failed to retrieve faction " + factionUuid, e);
         }
     }
 
@@ -180,18 +158,16 @@ public class FactionRepository {
             preparedStatement.setString(1, factionName);
             preparedStatement.setInt(2, pageable.itemsPerPage());
             preparedStatement.setInt(3, pageable.currentPage() * pageable.itemsPerPage());
-            ResultSet rs = preparedStatement.executeQuery();
 
-            List<FactionPlayer> factionPlayers = new ArrayList<>();
-            while(rs.next()){
-                factionPlayers.add(new FactionPlayer(
-                        UUID.fromString(rs.getString("uuid")),
-                        rs.getString("username"),
-                        ChatMode.valueOf(rs.getString("chat_mode")),
-                        Instant.ofEpochMilli(rs.getLong("last_seen"))
-                ));
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+                List<FactionPlayer> factionPlayers = new ArrayList<>();
+
+                while (rs.next()) {
+                    factionPlayers.add(mapPlayer(rs));
+                }
+
+                return new Result.Success<>(factionPlayers);
             }
-            return new Result.Success<>(factionPlayers);
         }
         catch (SQLException e) {
             return new Result.Error<>("Failed to retrieve faction Members", e);
@@ -201,41 +177,34 @@ public class FactionRepository {
     public Result<Integer> getFactionMembersCount(Connection connection, String factionName){
         try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM faction_memberships m JOIN factions f ON f.uuid = m.faction_uuid WHERE f.name = ?")) {
             preparedStatement.setString(1, factionName);
-            ResultSet rs = preparedStatement.executeQuery();
 
-            int count = 0;
-            while (rs.next()) {
-                count = rs.getInt(1);
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+                return new Result.Success<>(rs.next() ? rs.getInt(1) : 0);
             }
-
-            return new Result.Success<>(count);
         }
         catch (SQLException e) {
             return new Result.Error<>("Failed to retrieve faction members count", e);
         }
     }
 
-    public Result<Faction> getByUuid(Connection connection, UUID factionUuid) {
-        try (PreparedStatement ps = connection.prepareStatement("SELECT * FROM factions WHERE uuid = ?")) {
-            ps.setString(1, factionUuid.toString());
-            ResultSet rs = ps.executeQuery();
+    private static Faction mapFaction(ResultSet rs) throws SQLException {
+        return new Faction(
+                UUID.fromString(rs.getString("uuid")),
+                rs.getString("name"),
+                rs.getString("color"),
+                UUID.fromString(rs.getString("owner_uuid")),
+                Instant.ofEpochMilli(rs.getLong("created_at")),
+                rs.getBoolean("is_active"),
+                Instant.ofEpochMilli(rs.getLong("last_activity"))
+        );
+    }
 
-            if (!rs.next()) {
-                return new Result.Failure<>("Your faction no longer exists.");
-            }
-
-            return new Result.Success<>(new Faction(
-                    UUID.fromString(rs.getString("uuid")),
-                    rs.getString("name"),
-                    rs.getString("color"),
-                    UUID.fromString(rs.getString("owner_uuid")),
-                    Instant.ofEpochMilli(rs.getLong("created_at")),
-                    rs.getBoolean("is_active"),
-                    Instant.ofEpochMilli(rs.getLong("last_activity"))
-            ));
-        }
-        catch (SQLException e) {
-            return new Result.Error<>("Failed to retrieve faction " + factionUuid, e);
-        }
+    private static FactionPlayer mapPlayer(ResultSet rs) throws SQLException {
+        return new FactionPlayer(
+                UUID.fromString(rs.getString("uuid")),
+                rs.getString("username"),
+                ChatMode.valueOf(rs.getString("chat_mode")),
+                Instant.ofEpochMilli(rs.getLong("last_seen"))
+        );
     }
 }

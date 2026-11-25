@@ -2,6 +2,7 @@ package com.entropire.simplefactions.faction;
 
 import java.sql.Connection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.entropire.simplefactions.database.DataBaseContext;
@@ -29,9 +30,9 @@ public class FactionService {
 
     public Result<Faction> createFaction(String name, String color, UUID ownerUuid) {
         return db.transaction(conn -> {
-            Result<FactionMembership> membershipResult = membershipRepository.getByPlayerUuid(conn, ownerUuid);
-            if (!(membershipResult instanceof Result.Success(var membership))) return membershipResult.propagate();
-            if (membership != null) return new Result.Failure<>("You are already part of a faction!");
+            Result<Optional<FactionMembership>> existingResult = membershipRepository.findByPlayerUuid(conn, ownerUuid);
+            if (!(existingResult instanceof Result.Success(var existing))) return existingResult.propagate();
+            if (existing.isPresent()) return new Result.Failure<>("You are already part of a faction!");
 
             Result<Faction> factionResult = factionRepository.save(conn, new Faction(name, color, ownerUuid));
             if (!(factionResult instanceof Result.Success(var faction))) return factionResult;
@@ -45,9 +46,8 @@ public class FactionService {
 
     public Result<List<UUID>> deleteFaction(UUID ownerUuid) {
         return db.transaction(conn -> {
-            Result<FactionMembership> memberResult = membershipRepository.getByPlayerUuid(conn, ownerUuid);
+            Result<FactionMembership> memberResult = Result.require(membershipRepository.findByPlayerUuid(conn, ownerUuid), "You are not in a faction!");
             if (!(memberResult instanceof Result.Success(var membership))) return memberResult.propagate();
-            if (membership == null) return new Result.Failure<>("You are not in a faction!");
             if (membership.role() != Role.OWNER) return new Result.Failure<>("Only the owner can delete the faction!");
 
             Result<List<FactionMembership>> membersResult = membershipRepository.getAllByFactionUuid(conn, membership.factionUuid());
@@ -85,7 +85,8 @@ public class FactionService {
     }
 
     public Result<FactionPlayer> getFactionOwner(String factionName){
-        return db.withConnection(conn -> factionRepository.getOwner(conn, factionName));
+        return db.withConnection(conn ->
+                Result.require(factionRepository.findOwner(conn, factionName), "There is no faction named " + factionName));
     }
 
     public Result<FactionPlayer> getPlayerFactionOwner(UUID playerUuid) {
@@ -93,13 +94,13 @@ public class FactionService {
             Result<Faction> factionResult = getPlayerFaction(conn, playerUuid);
             if (!(factionResult instanceof Result.Success(var faction))) return factionResult.propagate();
 
-            return factionRepository.getOwner(conn, faction.name());
+            return Result.require(factionRepository.findOwner(conn, faction.name()), "Could not find the owner of your faction.");
         });
     }
 
     public Result<FactionMembersPage> getFactionMembers(String factionName, Pageable<FactionPlayer> pageable) {
         return db.transaction(conn -> {
-            Result<Faction> factionResult = factionRepository.getByName(conn, factionName);
+            Result<Faction> factionResult = Result.require(factionRepository.findByName(conn, factionName), "There is no faction named " + factionName);
             if (!(factionResult instanceof Result.Success(var faction))) return factionResult.propagate();
 
             return getFactionMembers(conn, faction, pageable);
@@ -116,11 +117,10 @@ public class FactionService {
     }
 
     private Result<Faction> getPlayerFaction(Connection conn, UUID playerUuid) {
-        Result<FactionMembership> membershipResult = membershipRepository.getByPlayerUuid(conn, playerUuid);
+        Result<FactionMembership> membershipResult = Result.require(membershipRepository.findByPlayerUuid(conn, playerUuid), "You are not in a faction!");
         if (!(membershipResult instanceof Result.Success(var membership))) return membershipResult.propagate();
-        if (membership == null) return new Result.Failure<>("You are not in a faction!");
 
-        return factionRepository.getByUuid(conn, membership.factionUuid());
+        return Result.require(factionRepository.findByUuid(conn, membership.factionUuid()), "Your faction no longer exists.");
     }
 
     private Result<FactionMembersPage> getFactionMembers(Connection conn, Faction faction, Pageable<FactionPlayer> pageable) {

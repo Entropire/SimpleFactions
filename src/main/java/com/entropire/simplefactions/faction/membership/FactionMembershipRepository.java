@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class FactionMembershipRepository {
@@ -27,68 +28,57 @@ public class FactionMembershipRepository {
         return new Result.Success<>(true);
     }
 
-    public Result<FactionMembership> getByPlayerUuid(Connection connection, UUID uuid) {
-        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM faction_memberships Where player_uuid = ?")) {
+    public Result<Optional<FactionMembership>> findByPlayerUuid(Connection connection, UUID uuid) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM faction_memberships WHERE player_uuid = ?")) {
             preparedStatement.setString(1, uuid.toString());
-            ResultSet rs = preparedStatement.executeQuery();
 
-            FactionMembership factionMembership = null;
-
-            while (rs.next()) {
-                factionMembership = new FactionMembership(
-                        UUID.fromString(rs.getString("player_uuid")),
-                        UUID.fromString(rs.getString("faction_uuid")),
-                        Role.valueOf(rs.getString("role")),
-                        Instant.ofEpochMilli(rs.getLong("joined_at"))
-                );
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+                return new Result.Success<>(rs.next() ? Optional.of(map(rs)) : Optional.empty());
             }
-
-            return new Result.Success<>(factionMembership);
         }
         catch (SQLException e) {
             return new Result.Error<>("Failed to retrieve faction membership", e);
+        }
+    }
+
+    public Result<Optional<FactionMembership>> findByPlayerName(Connection connection, String playerName) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT m.* FROM faction_memberships m JOIN players p ON p.uuid = m.player_uuid WHERE p.username = ? COLLATE NOCASE")) {
+            preparedStatement.setString(1, playerName);
+
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+                return new Result.Success<>(rs.next() ? Optional.of(map(rs)) : Optional.empty());
+            }
+        }
+        catch (SQLException e) {
+            return new Result.Error<>("Failed to retrieve faction member", e);
         }
     }
 
     public Result<List<FactionMembership>> getAllByFactionUuid(Connection connection, UUID uuid) {
-        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM faction_memberships Where faction_uuid = ?")) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM faction_memberships WHERE faction_uuid = ?")) {
             preparedStatement.setString(1, uuid.toString());
-            ResultSet rs = preparedStatement.executeQuery();
 
-            List<FactionMembership> factionMembership = new ArrayList<>();
- 
-            while (rs.next()) {
-                factionMembership.add(
-                    new FactionMembership(
-                        UUID.fromString(rs.getString("player_uuid")),
-                        UUID.fromString(rs.getString("faction_uuid")),
-                        Role.valueOf(rs.getString("role")),
-                        Instant.ofEpochMilli(rs.getLong("joined_at"))
-                    ));
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+                List<FactionMembership> memberships = new ArrayList<>();
+
+                while (rs.next()) {
+                    memberships.add(map(rs));
+                }
+
+                return new Result.Success<>(memberships);
             }
-
-            return new Result.Success<>(factionMembership);
         }
         catch (SQLException e) {
             return new Result.Error<>("Failed to retrieve faction membership", e);
         }
     }
 
-    public Result<FactionMembership> deleteByPlayerUuid(Connection connection, UUID playerUuid) {
+    public Result<Optional<FactionMembership>> deleteByPlayerUuid(Connection connection, UUID playerUuid) {
         try (PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM faction_memberships WHERE player_uuid = ? RETURNING *")) {
             preparedStatement.setString(1, playerUuid.toString());
 
             try (ResultSet rs = preparedStatement.executeQuery()) {
-                if (!rs.next()) {
-                    return new Result.Success<>(null); // nothing was deleted
-                }
-
-                return new Result.Success<>(new FactionMembership(
-                        UUID.fromString(rs.getString("player_uuid")),
-                        UUID.fromString(rs.getString("faction_uuid")),
-                        Role.valueOf(rs.getString("role")),
-                        Instant.ofEpochMilli(rs.getLong("joined_at"))
-                ));
+                return new Result.Success<>(rs.next() ? Optional.of(map(rs)) : Optional.empty());
             }
         }
         catch (SQLException e) {
@@ -118,25 +108,12 @@ public class FactionMembershipRepository {
         }
     }
 
-    public Result<FactionMembership> getByPlayerName(Connection connection, String playerName) {
-        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT m.* FROM faction_memberships m JOIN players p ON p.uuid = m.player_uuid WHERE p.username = ? COLLATE NOCASE")){
-            preparedStatement.setString(1, playerName);
-
-            try (ResultSet rs = preparedStatement.executeQuery()) {
-                if (!rs.next()) {
-                    return new Result.Success<>(null);
-                }
-
-                return new Result.Success<>(new FactionMembership(
-                        UUID.fromString(rs.getString("player_uuid")),
-                        UUID.fromString(rs.getString("faction_uuid")),
-                        Role.valueOf(rs.getString("role")),
-                        Instant.ofEpochMilli(rs.getLong("joined_at"))
-                ));
-            }
-        }
-        catch (SQLException e) {
-            return new Result.Error<>("Failed to retrieve faction member", e);
-        }
+    private static FactionMembership map(ResultSet rs) throws SQLException {
+        return new FactionMembership(
+                UUID.fromString(rs.getString("player_uuid")),
+                UUID.fromString(rs.getString("faction_uuid")),
+                Role.valueOf(rs.getString("role")),
+                Instant.ofEpochMilli(rs.getLong("joined_at"))
+        );
     }
 }
