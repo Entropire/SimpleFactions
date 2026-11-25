@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.20.6-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
     compileOnly("org.jspecify:jspecify:1.0.0")
 
     implementation("org.xerial:sqlite-jdbc:3.50.3.0")
@@ -22,20 +22,22 @@ dependencies {
 }
 
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(25)
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
 }
 
 val testServers = mapOf(
     "26.1.1" to 25,
     "1.21.11" to 21,
-    "1.20.6" to 21,
+    "1.20.4" to 17,
 )
 
-testServers.forEach { (minecraftVersion, javaVersion) ->
+testServers.entries.forEachIndexed { index, (minecraftVersion, javaVersion) ->
     val major = minecraftVersion.split(".").take(2).joinToString("_")
+    val port = 25565 + index
     tasks.register<xyz.jpenilla.runpaper.task.RunServer>("runServer$major") {
         group = "run paper"
-        description = "Runs a Paper $minecraftVersion test server on Java $javaVersion with this plugin."
+        description = "Runs a Paper $minecraftVersion test server on Java $javaVersion with this plugin (port $port)."
+        args("--port", port.toString())
         minecraftVersion(minecraftVersion)
         pluginJars(tasks.jar.flatMap { it.archiveFile })
         runDirectory = layout.projectDirectory.dir("run/$major")
@@ -47,6 +49,7 @@ testServers.forEach { (minecraftVersion, javaVersion) ->
 tasks {
     runServer {
         minecraftVersion("26.1.1")
+        javaLauncher = project.javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
         jvmArgs("-Xms2G", "-Xmx2G")
     }
 
@@ -60,8 +63,4 @@ tasks {
     test {
         useJUnitPlatform()
     }
-}
-
-tasks.withType<JavaCompile>().configureEach {
-    options.release = 21
 }

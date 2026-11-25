@@ -33,17 +33,19 @@ public final class SimpleFactions extends JavaPlugin {
         if (!getDataFolder().exists()) getDataFolder().mkdir();
         db = new DataBaseContext(databaseFile().getAbsolutePath());
 
-        switch (db.initSchema(pluginVersion())) {
-            case Result.Success<SchemaStatus>(SchemaStatus.Ready ready) -> startPlugin();
-            case Result.Success<SchemaStatus>(SchemaStatus.Incompatible incompatible) -> startSafeMode(incompatible);
-            case Result.Failure<SchemaStatus>(String message) -> {
-                logger.severe("Could not set up the database: " + message);
-                getServer().getPluginManager().disablePlugin(this);
+        Result<SchemaStatus> schemaResult = db.initSchema(pluginVersion());
+        if (schemaResult instanceof Result.Success<SchemaStatus> success) {
+            if (success.value() instanceof SchemaStatus.Incompatible incompatible) {
+                startSafeMode(incompatible);
+            } else {
+                startPlugin();
             }
-            case Result.Error<SchemaStatus>(String message, Exception e) -> {
-                logger.log(Level.SEVERE, "Could not set up the database: " + message, e);
-                getServer().getPluginManager().disablePlugin(this);
-            }
+        } else if (schemaResult instanceof Result.Failure<SchemaStatus> failure) {
+            logger.severe("Could not set up the database: " + failure.message());
+            getServer().getPluginManager().disablePlugin(this);
+        } else if (schemaResult instanceof Result.Error<SchemaStatus> error) {
+            logger.log(Level.SEVERE, "Could not set up the database: " + error.message(), error.exception());
+            getServer().getPluginManager().disablePlugin(this);
         }
     }
 

@@ -75,7 +75,8 @@ class DataBaseContextTest {
         assertInstanceOf(SchemaStatus.Incompatible.class, init(db, "3.0"));
 
         Result<Path> reset = db.resetDatabase();
-        if (!(reset instanceof Result.Success<Path>(Path backup))) throw new AssertionError("reset failed: " + reset);
+        if (!(reset instanceof Result.Success<Path> resetSuccess)) throw new AssertionError("reset failed: " + reset);
+        Path backup = resetSuccess.value();
 
         assertTrue(Files.exists(backup), "backup file should exist");
         assertFalse(Files.exists(dbFile()), "old database file should be moved away");

@@ -45,12 +45,12 @@ public class ChatMessage {
     }
 
     public ChatMessage setBold(boolean bold){
-        components.getLast().setBold(bold);
+        components.get(components.size() - 1).setBold(bold);
         return this;
     }
 
     public ChatMessage setColor(TextColor color){
-        components.getLast().setColor(color);
+        components.get(components.size() - 1).setColor(color);
         return this;
     }
 

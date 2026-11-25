@@ -41,19 +41,17 @@ public class ListCommand extends CommandNode {
         }
         int page = args.length == 0 ? 0 : Math.max(0, pageRequest - 1);
 
-        Pageable<Faction> factionsPage;
-        switch (factionService.getFactions(new Pageable<>(page, 10))) {
-            case Result.Success<Pageable<Faction>>(Pageable<Faction> value) -> factionsPage = value;
-            case Result.Failure<Pageable<Faction>>(String message) -> {
-                player.sendMessage(message);
-                return true;
-            }
-            case Result.Error<Pageable<Faction>>(String message, Exception e) -> {
-                SimpleFactions.getPluginLogger().log(Level.SEVERE, message, e);
+        Result<Pageable<Faction>> result = factionService.getFactions(new Pageable<>(page, 10));
+        if (!(result instanceof Result.Success<Pageable<Faction>> success)) {
+            if (result instanceof Result.Failure<Pageable<Faction>> failure) {
+                player.sendMessage(failure.message());
+            } else if (result instanceof Result.Error<Pageable<Faction>> error) {
+                SimpleFactions.getPluginLogger().log(Level.SEVERE, error.message(), error.exception());
                 player.sendMessage("Something went wrong while retrieving the list of factions.");
-                return true;
             }
+            return true;
         }
+        Pageable<Faction> factionsPage = success.value();
 
         ChatMessage message = new ChatMessage()
         .title(

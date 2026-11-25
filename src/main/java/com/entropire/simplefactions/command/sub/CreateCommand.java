@@ -39,15 +39,13 @@ public class CreateCommand extends CommandNode{
 
         Result<Faction> result = factionService.createFaction(args[0], color, player.getUniqueId());
 
-        switch (result) {
-            case Result.Success<Faction>(Faction faction) ->
-                    player.sendMessage("Created faction " + faction.name().value() + ".");
-            case Result.Failure<Faction>(String message) ->
-                    player.sendMessage(message);
-            case Result.Error<Faction>(String message, Exception e) -> {
-                SimpleFactions.getPluginLogger().log(Level.SEVERE, message, e);
-                player.sendMessage("Something went wrong while creating your faction.");
-            }
+        if (result instanceof Result.Success<Faction> success) {
+            player.sendMessage("Created faction " + success.value().name().value() + ".");
+        } else if (result instanceof Result.Failure<Faction> failure) {
+            player.sendMessage(failure.message());
+        } else if (result instanceof Result.Error<Faction> error) {
+            SimpleFactions.getPluginLogger().log(Level.SEVERE, error.message(), error.exception());
+            player.sendMessage("Something went wrong while creating your faction.");
         }
         return true;
     }

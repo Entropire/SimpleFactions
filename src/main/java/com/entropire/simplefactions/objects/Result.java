@@ -29,8 +29,8 @@ public sealed interface Result<T>
     }
 
     static <T> Result<T> require(Result<Optional<T>> result, String messageIfMissing) {
-        if (!(result instanceof Success<Optional<T>>(Optional<T> value))) return result.propagate();
+        if (!(result instanceof Success<Optional<T>> success)) return result.propagate();
 
-        return value.<Result<T>>map(Success::new).orElseGet(() -> new Failure<>(messageIfMissing));
+        return success.value().<Result<T>>map(Success::new).orElseGet(() -> new Failure<>(messageIfMissing));
     }
 }
