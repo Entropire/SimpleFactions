@@ -10,17 +10,17 @@ import com.entropire.simplefactions.objects.Result;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.entropire.simplefactions.FactionApplication;
+import com.entropire.simplefactions.faction.FactionService;
 import com.entropire.simplefactions.command.CommandNode;
 import com.entropire.simplefactions.player.FactionPlayer;
 
 public class OwnerCommand extends CommandNode {
     
-    private final FactionApplication factionApplication;
+    private final FactionService factionService;
     
-    public OwnerCommand(FactionApplication factionApplication){
+    public OwnerCommand(FactionService factionService){
         super("owner", "Return the owner of the faction.");
-        this.factionApplication = factionApplication;
+        this.factionService = factionService;
     }
 
     @Override
@@ -32,8 +32,8 @@ public class OwnerCommand extends CommandNode {
         }
 
         Result<FactionPlayer> result = args.length < 1
-                ? factionApplication.getPlayerFactionOwner(player.getUniqueId())
-                : factionApplication.getFactionOwner(args[0]);
+                ? factionService.getPlayerFactionOwner(player.getUniqueId())
+                : factionService.getFactionOwner(args[0]);
 
         switch (result) {
             case Result.Success<FactionPlayer>(FactionPlayer owner) -> player.sendMessage(owner.username());
@@ -50,7 +50,7 @@ public class OwnerCommand extends CommandNode {
     public List<String> tabComplete(CommandSender sender, String[] args) {
         if (args.length != 1 || args[0].isEmpty()) return List.of();
 
-        return switch (factionApplication.getFactionNames(new Pageable<>(0, 20), args[0])) {
+        return switch (factionService.getFactionNames(new Pageable<>(0, 20), args[0])) {
             case Result.Success<Pageable<String>>(Pageable<String> factionNames) -> factionNames.items();
             case Result.Failure<Pageable<String>> _ -> List.of();
             case Result.Error<Pageable<String>>(String message, Exception e) -> {

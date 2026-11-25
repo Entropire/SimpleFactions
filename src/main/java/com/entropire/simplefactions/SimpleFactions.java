@@ -4,10 +4,13 @@ import com.entropire.simplefactions.command.DatabaseResetCommand;
 import com.entropire.simplefactions.command.SimpleFactionCommand;
 import com.entropire.simplefactions.database.DataBaseContext;
 import com.entropire.simplefactions.database.SchemaStatus;
+import com.entropire.simplefactions.faction.FactionRepository;
 import com.entropire.simplefactions.faction.FactionService;
+import com.entropire.simplefactions.faction.membership.FactionMembershipRepository;
 import com.entropire.simplefactions.faction.membership.FactionMembershipService;
 import com.entropire.simplefactions.listener.PlayerJoinListener;
 import com.entropire.simplefactions.objects.Result;
+import com.entropire.simplefactions.player.FactionPlayerRepository;
 import com.entropire.simplefactions.player.FactionPlayerService;
 
 import org.bukkit.command.PluginCommand;
@@ -45,18 +48,20 @@ public final class SimpleFactions extends JavaPlugin {
     }
 
     public void startPlugin() {
-        FactionService factionService = new FactionService();
-        FactionMembershipService factionMembershipService = new FactionMembershipService();
-        FactionPlayerService playerService = new FactionPlayerService();
+        FactionRepository factionRepository = new FactionRepository();
+        FactionMembershipRepository membershipRepository = new FactionMembershipRepository();
+        FactionPlayerRepository playerRepository = new FactionPlayerRepository();
 
-        FactionApplication factionApplication = new FactionApplication(db, factionService, factionMembershipService);
+        FactionService factionService = new FactionService(db, factionRepository, membershipRepository);
+        FactionMembershipService membershipService = new FactionMembershipService(db, membershipRepository);
+        FactionPlayerService playerService = new FactionPlayerService(db, playerRepository);
 
-        SimpleFactionCommand factionCommand = new SimpleFactionCommand(factionApplication);
+        SimpleFactionCommand factionCommand = new SimpleFactionCommand(factionService, membershipService);
         PluginCommand command = getCommand("faction");
         command.setExecutor(factionCommand);
         command.setTabCompleter(factionCommand);
 
-        getServer().getPluginManager().registerEvents(new PlayerJoinListener(db, playerService), this);
+        getServer().getPluginManager().registerEvents(new PlayerJoinListener(playerService), this);
     }
 
     private void startSafeMode(SchemaStatus.Incompatible incompatible) {

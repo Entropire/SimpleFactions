@@ -11,16 +11,16 @@ import it.unimi.dsi.fastutil.ints.IntLists;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.entropire.simplefactions.FactionApplication;
+import com.entropire.simplefactions.faction.FactionService;
 import com.entropire.simplefactions.command.CommandNode;
 
 public class CreateCommand extends CommandNode{
     
-    private final FactionApplication factionApplication;
+    private final FactionService factionService;
     
-    public CreateCommand(FactionApplication factionApplication){
+    public CreateCommand(FactionService factionService){
         super("create", "Create a new faction.");
-        this.factionApplication = factionApplication;
+        this.factionService = factionService;
     }
 
     @Override
@@ -38,7 +38,7 @@ public class CreateCommand extends CommandNode{
 
         String color = args.length > 1 ? args[1] : "#ffffff";
 
-        Result<Faction> result = factionApplication.createFaction(args[0], color, player.getUniqueId());
+        Result<Faction> result = factionService.createFaction(args[0], color, player.getUniqueId());
 
         switch (result) {
             case Result.Success<Faction>(Faction faction) ->

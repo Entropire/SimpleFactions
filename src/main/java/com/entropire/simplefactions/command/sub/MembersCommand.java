@@ -1,6 +1,6 @@
 package com.entropire.simplefactions.command.sub;
 
-import com.entropire.simplefactions.FactionApplication;
+import com.entropire.simplefactions.faction.FactionService;
 import com.entropire.simplefactions.SimpleFactions;
 import com.entropire.simplefactions.chat.ChatMessage;
 import com.entropire.simplefactions.command.CommandNode;
@@ -17,11 +17,11 @@ import java.util.logging.Level;
 
 public class MembersCommand extends CommandNode {
 
-    private final FactionApplication factionApplication;
+    private final FactionService factionService;
 
-    public MembersCommand(FactionApplication factionApplication) {
+    public MembersCommand(FactionService factionService) {
         super("members", "Return the list of members of a faction.");
-        this.factionApplication = factionApplication;
+        this.factionService = factionService;
     }
 
     @Override
@@ -36,10 +36,10 @@ public class MembersCommand extends CommandNode {
         Result<FactionMembersPage> result;
         if (ownFaction) {
             int page = args.length == 1 ? parsePage(args[0]) : 0;
-            result = factionApplication.getPlayerFactionMembers(player.getUniqueId(), new Pageable<>(page, 10));
+            result = factionService.getPlayerFactionMembers(player.getUniqueId(), new Pageable<>(page, 10));
         } else {
             int page = args.length > 1 ? parsePage(args[1]) : 0;
-            result = factionApplication.getFactionMembers(args[0], new Pageable<>(page, 10));
+            result = factionService.getFactionMembers(args[0], new Pageable<>(page, 10));
         }
 
         String factionName;
@@ -98,7 +98,7 @@ public class MembersCommand extends CommandNode {
     public List<String> tabComplete(CommandSender sender, String[] args) {
         if (args.length != 1 || args[0].isEmpty()) return List.of();
 
-        return switch (factionApplication.getFactionNames(new Pageable<>(0, 20), args[0])) {
+        return switch (factionService.getFactionNames(new Pageable<>(0, 20), args[0])) {
             case Result.Success<Pageable<String>>(Pageable<String> factionNames) -> factionNames.items();
             case Result.Failure<Pageable<String>> failure -> List.of();
             case Result.Error<Pageable<String>>(String message, Exception e) -> {

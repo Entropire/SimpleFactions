@@ -6,7 +6,7 @@ import java.util.logging.Level;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.entropire.simplefactions.FactionApplication;
+import com.entropire.simplefactions.faction.FactionService;
 import com.entropire.simplefactions.chat.ChatMessage;
 import com.entropire.simplefactions.command.CommandNode;
 import com.entropire.simplefactions.faction.Faction;
@@ -18,11 +18,11 @@ import net.kyori.adventure.text.format.TextColor;
 
 public class ListCommand extends CommandNode {
 
-    private final FactionApplication factionApplication;
+    private final FactionService factionService;
     
-    public ListCommand(FactionApplication factionApplication){
+    public ListCommand(FactionService factionService){
         super("list", "Returns the list of factions.");
-        this.factionApplication = factionApplication;
+        this.factionService = factionService;
     }
 
     @Override
@@ -42,7 +42,7 @@ public class ListCommand extends CommandNode {
         int page = args.length == 0 ? 0 : Math.max(0, pageRequest - 1);
 
         Pageable<Faction> factionsPage;
-        switch (factionApplication.getFactions(new Pageable<>(page, 10))) {
+        switch (factionService.getFactions(new Pageable<>(page, 10))) {
             case Result.Success<Pageable<Faction>>(Pageable<Faction> value) -> factionsPage = value;
             case Result.Failure<Pageable<Faction>>(String message) -> {
                 player.sendMessage(message);

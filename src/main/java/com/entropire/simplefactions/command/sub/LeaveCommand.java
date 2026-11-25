@@ -1,6 +1,6 @@
 package com.entropire.simplefactions.command.sub;
 
-import com.entropire.simplefactions.FactionApplication;
+import com.entropire.simplefactions.faction.membership.FactionMembershipService;
 import com.entropire.simplefactions.SimpleFactions;
 import com.entropire.simplefactions.chat.ChatMessage;
 import com.entropire.simplefactions.command.CommandNode;
@@ -14,11 +14,11 @@ import java.util.logging.Level;
 
 public class LeaveCommand extends CommandNode {
 
-    private final FactionApplication factionApplication;
+    private final FactionMembershipService membershipService;
 
-    public LeaveCommand(FactionApplication factionApplication) {
+    public LeaveCommand(FactionMembershipService membershipService) {
         super("leave", "Leave your faction.");
-        this.factionApplication = factionApplication;
+        this.membershipService = membershipService;
     }
 
     @Override
@@ -29,7 +29,7 @@ public class LeaveCommand extends CommandNode {
             return true;
         }
 
-        switch (factionApplication.leaveFaction(player.getUniqueId())) {
+        switch (membershipService.leaveFaction(player.getUniqueId())) {
             case Result.Success<FactionMembership>(FactionMembership _) -> player.sendMessage("You have left your faction.");
             case Result.Failure<FactionMembership>(String message) -> player.sendMessage(message);
             case Result.Error<FactionMembership>(String message, Exception e) -> {

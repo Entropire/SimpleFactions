@@ -8,21 +8,22 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.command.CommandSender;
 
-import com.entropire.simplefactions.FactionApplication;
+import com.entropire.simplefactions.faction.FactionService;
+import com.entropire.simplefactions.faction.membership.FactionMembershipService;
 
 public class SimpleFactionCommand extends CommandNode {
 
     private static final int HELP_PAGE_SIZE = 10;
 
-    public SimpleFactionCommand(FactionApplication factionApplication){
+    public SimpleFactionCommand(FactionService factionService, FactionMembershipService membershipService){
         super("simplefactions", "");
-        register(new CreateCommand(factionApplication));
-        register(new DeleteCommand(factionApplication));
-        register(new ListCommand(factionApplication));
-        register(new OwnerCommand(factionApplication));
-        register(new MembersCommand(factionApplication));
-        register(new LeaveCommand(factionApplication));
-        register(new KickCommand(factionApplication));
+        register(new CreateCommand(factionService));
+        register(new DeleteCommand(factionService));
+        register(new ListCommand(factionService));
+        register(new OwnerCommand(factionService));
+        register(new MembersCommand(factionService));
+        register(new LeaveCommand(membershipService));
+        register(new KickCommand(membershipService));
     }
 
     @Override

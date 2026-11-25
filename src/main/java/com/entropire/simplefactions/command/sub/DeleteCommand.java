@@ -11,16 +11,16 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.entropire.simplefactions.FactionApplication;
+import com.entropire.simplefactions.faction.FactionService;
 import com.entropire.simplefactions.command.CommandNode;
 
 public class DeleteCommand extends CommandNode{
 
-    private final FactionApplication factionApplication;
+    private final FactionService factionService;
 
-    public DeleteCommand(FactionApplication factionApplication){
+    public DeleteCommand(FactionService factionService){
         super("delete", "Delete your faction.");
-        this.factionApplication = factionApplication;
+        this.factionService = factionService;
     }
     
     @Override
@@ -31,7 +31,7 @@ public class DeleteCommand extends CommandNode{
             return false;
         }
         
-        switch (factionApplication.deleteFaction(player.getUniqueId())) {
+        switch (factionService.deleteFaction(player.getUniqueId())) {
             case Result.Success<List<UUID>>(List<UUID> memberUuids) -> {
                 player.sendMessage("You have deleted your faction.");
                 for (UUID uuid : memberUuids) {

@@ -1,6 +1,6 @@
 package com.entropire.simplefactions.command.sub;
 
-import com.entropire.simplefactions.FactionApplication;
+import com.entropire.simplefactions.faction.membership.FactionMembershipService;
 import com.entropire.simplefactions.SimpleFactions;
 import com.entropire.simplefactions.chat.ChatMessage;
 import com.entropire.simplefactions.command.CommandNode;
@@ -16,11 +16,11 @@ import java.util.logging.Level;
 
 public class KickCommand extends CommandNode {
 
-    private final FactionApplication factionApplication;
+    private final FactionMembershipService membershipService;
 
-    public KickCommand(FactionApplication factionApplication) {
+    public KickCommand(FactionMembershipService membershipService) {
         super("kick", "Kick a member from your faction.");
-        this.factionApplication = factionApplication;
+        this.membershipService = membershipService;
     }
 
     @Override
@@ -38,7 +38,7 @@ public class KickCommand extends CommandNode {
 
         String memberName = args[0];
 
-        switch (factionApplication.kickFactionMember(player.getUniqueId(), memberName)) {
+        switch (membershipService.kickFactionMember(player.getUniqueId(), memberName)) {
             case Result.Success<FactionMembership>(FactionMembership kicked) -> {
                 player.sendMessage("You have kicked " + memberName + " from your faction.");
                 Player member = Bukkit.getPlayer(kicked.playerUuid());
@@ -59,7 +59,7 @@ public class KickCommand extends CommandNode {
         if (!(sender instanceof Player player)) return List.of();
         if (args.length != 1) return List.of();
 
-        return switch (factionApplication.getFactionMemberNames(new Pageable<>(0, 20), player.getUniqueId(), args[0])) {
+        return switch (membershipService.getFactionMemberNames(new Pageable<>(0, 20), player.getUniqueId(), args[0])) {
             case Result.Success<Pageable<String>>(Pageable<String> memberNames) -> memberNames.items().stream()
                     .filter(name -> !name.equalsIgnoreCase(player.getName()))
                     .toList();

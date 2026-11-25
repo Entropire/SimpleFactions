@@ -1,19 +1,32 @@
 package com.entropire.simplefactions.player;
 
-import java.sql.Connection;
 import java.time.Instant;
 import java.util.UUID;
 
+import com.entropire.simplefactions.database.DataBaseContext;
 import com.entropire.simplefactions.objects.Result;
 
 public class FactionPlayerService {
-    private final FactionPlayerRepository repository = new FactionPlayerRepository();
+    private final DataBaseContext db;
+    private final FactionPlayerRepository playerRepository;
 
-    public Result<Boolean> saveIfNotExists(Connection connection, FactionPlayer player) {
-        return repository.saveIfNotExists(connection, player);
+    public FactionPlayerService(DataBaseContext db, FactionPlayerRepository playerRepository) {
+        this.db = db;
+        this.playerRepository = playerRepository;
     }
 
-    public Result<Boolean> updatePlayerLastSeen(Connection connection, UUID uuid, Instant lastseen){
-        return repository.updatePlayerLastSeen(connection, uuid, lastseen);
+    public Result<Boolean> registerJoin(UUID playerUuid, String username) {
+        Instant now = Instant.now();
+
+        return db.transaction(conn -> {
+            Result<Boolean> saveResult = playerRepository.saveIfNotExists(conn, new FactionPlayer(playerUuid, username, ChatMode.PUBLIC, now));
+            if (!saveResult.isSuccess()) return saveResult;
+
+            return playerRepository.updatePlayerLastSeen(conn, playerUuid, now);
+        });
+    }
+
+    public Result<Boolean> registerLeave(UUID playerUuid) {
+        return db.withConnection(conn -> playerRepository.updatePlayerLastSeen(conn, playerUuid, Instant.now()));
     }
 }
