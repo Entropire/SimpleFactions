@@ -3,9 +3,7 @@ package com.entropire.simplefactions.objects;
 import java.util.Objects;
 import java.util.Optional;
 
-public sealed interface Result<T>
-        permits Result.Success, Result.Failure, Result.Error {
-
+public interface Result<T> {
     record Success<T>(T value) implements Result<T> {
         public Success {
             Objects.requireNonNull(value, "Success value cannot be null");

@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.18.2-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.17.1-R0.1-SNAPSHOT")
     compileOnly("org.jspecify:jspecify:1.0.0")
 
     implementation("org.xerial:sqlite-jdbc:3.50.3.0")
@@ -22,7 +22,7 @@ dependencies {
 }
 
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(17)
+    toolchain.languageVersion = JavaLanguageVersion.of(16)
 }
 
 val testServers = mapOf(
@@ -31,6 +31,7 @@ val testServers = mapOf(
     "1.20.4" to 17,
     "1.19.4" to 17,
     "1.18.2" to 17,
+    "1.17.1" to 16,
 )
 
 testServers.entries.forEachIndexed { index, (minecraftVersion, javaVersion) ->
@@ -50,6 +51,7 @@ testServers.entries.forEachIndexed { index, (minecraftVersion, javaVersion) ->
 
 val bundledSqliteDrivers = mapOf(
     "1.18.2" to "3.36.0.3",
+    "1.17.1" to "3.34.0",
 )
 
 bundledSqliteDrivers.forEach { (minecraftVersion, driverVersion) ->
