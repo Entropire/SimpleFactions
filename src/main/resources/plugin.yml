@@ -3,6 +3,7 @@ version: '${version}'
 
 main: com.entropire.simplefactions.SimpleFactions
 api-version: '1.17'
+folia-supported: true
 load: POSTWORLD
 
 commands:

@@ -51,7 +51,7 @@ It's designed to be lightweight and accessible for both players and server owner
 | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | Spigot, CraftBukkit                                              | Supported                                                                                        |
 | Paper and Paper forks (Purpur, Pufferfish, ...)                  | Supported                                                                                        |
-| Folia                                                            | Not supported yet                                                                                |
+| Folia (1.19.4 and newer)                                         | Supported                                                                                        |
 | Hybrid servers (Mohist, Arclight, ...)                           | Soft-supported: expected to work but not tested. [Open an issue](https://github.com/Entropire/SimpleFactions/issues) if something doesn't work. |
 | Proxies (Velocity, BungeeCord), Fabric, NeoForge, Sponge         | Not supported                                                                                    |
 
