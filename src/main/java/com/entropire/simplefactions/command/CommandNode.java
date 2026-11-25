@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.entropire.simplefactions.chat.ChatMessage;
-import net.kyori.adventure.text.Component;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -79,7 +78,7 @@ public abstract class CommandNode implements CommandExecutor, TabCompleter {
                 .message(help(args))
                 .title(null);
 
-        sender.sendMessage(message.build());
+        message.sendTo(sender);
     }
 
     public abstract boolean execute(CommandSender sender, String[] args);

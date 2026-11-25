@@ -14,8 +14,6 @@ import com.entropire.simplefactions.objects.Pageable;
 import com.entropire.simplefactions.objects.Result;
 import com.entropire.simplefactions.SimpleFactions;
 
-import net.kyori.adventure.text.format.TextColor;
-
 public class ListCommand extends CommandNode {
 
     private final FactionService factionService;
@@ -62,11 +60,11 @@ public class ListCommand extends CommandNode {
                     factionsPage.maxPages()
                 )
         )
-        .textIf(factionsPage.maxPages() > 1, "Use /f list [n] to get page n of list").setColor(TextColor.color(0xFFD166))
+        .textIf(factionsPage.maxPages() > 1, "Use /f list [n] to get page n of list").setColor(0xFFD166)
         .list(factionsPage.items().stream().map(faction -> faction.name().value()).toArray(String[]::new))
         .title(null);
 
-        sender.sendMessage(message.build());
+        message.sendTo(sender);
         return true;
     }
 

@@ -32,7 +32,7 @@ public class KickCommand extends CommandNode {
         }
 
         if (args.length == 0) {
-            player.sendMessage(help(args).build());
+            help(args).sendTo(player);
             return true;
         }
 

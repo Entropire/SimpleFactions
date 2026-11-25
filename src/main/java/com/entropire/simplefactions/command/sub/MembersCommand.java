@@ -8,7 +8,6 @@ import com.entropire.simplefactions.faction.FactionMembersPage;
 import com.entropire.simplefactions.objects.Pageable;
 import com.entropire.simplefactions.objects.Result;
 import com.entropire.simplefactions.player.FactionPlayer;
-import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -68,11 +67,11 @@ public class MembersCommand extends CommandNode {
 
         ChatMessage message = new ChatMessage()
                 .title(title)
-                .textIf(factionPlayerPage.maxPages() > 1, pageHint).setColor(TextColor.color(0xFFD166))
+                .textIf(factionPlayerPage.maxPages() > 1, pageHint).setColor(0xFFD166)
                 .list(factionPlayerPage.items().stream().map(FactionPlayer::username).toArray(String[]::new))
                 .title(null);
 
-        player.sendMessage(message.build());
+        message.sendTo(player);
         return true;
     }
 

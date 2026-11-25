@@ -4,8 +4,6 @@ import java.util.List;
 
 import com.entropire.simplefactions.chat.ChatMessage;
 import com.entropire.simplefactions.command.sub.*;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.command.CommandSender;
 
 import com.entropire.simplefactions.faction.FactionService;

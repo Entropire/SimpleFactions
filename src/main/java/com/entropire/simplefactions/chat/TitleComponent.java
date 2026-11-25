@@ -3,8 +3,7 @@ package com.entropire.simplefactions.chat;
 import com.entropire.simplefactions.chat.font.FontHelper;
 import com.entropire.simplefactions.chat.font.MinecraftFont;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
+import net.md_5.bungee.api.chat.BaseComponent;
 
 public class TitleComponent extends MessageComponent {
 
@@ -15,24 +14,20 @@ public class TitleComponent extends MessageComponent {
     }
 
     @Override
-    public Component build() {
+    public BaseComponent build() {
 
         if (title == null || title.isEmpty()) {
-            return Component.text("─".repeat(CHAT_WIDTH / MinecraftFont.HORIZONTAL_LINE.getWidth()))
-                    .color(TextColor.color(0x888888));
+            return text("─".repeat(CHAT_WIDTH / MinecraftFont.HORIZONTAL_LINE.getWidth()), rgb(0x888888));
         }
 
         int remaining = (CHAT_WIDTH - FontHelper.width(title)) / MinecraftFont.HORIZONTAL_LINE.getWidth();
         int left = remaining / 2;
         int right = remaining - left;
 
-        return Component.text()
-                .append(Component.text("─".repeat(left))
-                        .color(TextColor.color(0x666666)))
-                .append(Component.text(" " + title + " ")
-                        .color(TextColor.color(0xFFD166)))
-                .append(Component.text("─".repeat(right))
-                        .color(TextColor.color(0x666666)))
-                .build();
+        BaseComponent line = text("", null);
+        line.addExtra(text("─".repeat(left), rgb(0x666666)));
+        line.addExtra(text(" " + title + " ", rgb(0xFFD166)));
+        line.addExtra(text("─".repeat(right), rgb(0x666666)));
+        return line;
     }
 }

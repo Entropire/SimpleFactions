@@ -1,7 +1,6 @@
 package com.entropire.simplefactions.chat;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
+import net.md_5.bungee.api.chat.BaseComponent;
 
 public class ListComponent extends MessageComponent {
 
@@ -12,19 +11,17 @@ public class ListComponent extends MessageComponent {
     }
 
     @Override
-    public Component build() {
+    public BaseComponent build() {
 
-        Component list = Component.empty();
+        BaseComponent list = text("", null);
 
         for (int i = 0; i < items.length; i++) {
 
-            list = list.append(
-                    Component.text("• ", TextColor.color(0x55FF55))
-                            .append(Component.text(items[i], TextColor.color(0xFFFFFF)))
-            );
+            list.addExtra(text("• ", rgb(0x55FF55)));
+            list.addExtra(text(items[i], rgb(0xFFFFFF)));
 
             if (i != items.length - 1) {
-                list = list.append(Component.newline());
+                list.addExtra(text("\n", null));
             }
         }
 
