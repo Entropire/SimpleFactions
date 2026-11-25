@@ -107,7 +107,7 @@ public final class SimpleFactions extends JavaPlugin {
     }
 
     private String pluginVersion() {
-        return getPluginMeta().getVersion();
+        return getDescription().getVersion();
     }
 
     public static Logger getPluginLogger() {
