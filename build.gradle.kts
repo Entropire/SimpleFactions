@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.20.6-R0.1-SNAPSHOT")
     compileOnly("org.jspecify:jspecify:1.0.0")
 
     implementation("org.xerial:sqlite-jdbc:3.50.3.0")
@@ -28,6 +28,7 @@ java {
 val testServers = mapOf(
     "26.1.1" to 25,
     "1.21.11" to 21,
+    "1.20.6" to 21,
 )
 
 testServers.forEach { (minecraftVersion, javaVersion) ->
