@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.19.2-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.18.2-R0.1-SNAPSHOT")
     compileOnly("org.jspecify:jspecify:1.0.0")
 
     implementation("org.xerial:sqlite-jdbc:3.50.3.0")
@@ -30,6 +30,7 @@ val testServers = mapOf(
     "1.21.11" to 21,
     "1.20.4" to 17,
     "1.19.4" to 17,
+    "1.18.2" to 17,
 )
 
 testServers.entries.forEachIndexed { index, (minecraftVersion, javaVersion) ->
@@ -45,6 +46,29 @@ testServers.entries.forEachIndexed { index, (minecraftVersion, javaVersion) ->
         javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(javaVersion) }
         jvmArgs("-Xms2G", "-Xmx2G")
     }
+}
+
+val bundledSqliteDrivers = mapOf(
+    "1.18.2" to "3.36.0.3",
+)
+
+bundledSqliteDrivers.forEach { (minecraftVersion, driverVersion) ->
+    val major = minecraftVersion.split(".").take(2).joinToString("_")
+    val driver = configurations.create("sqliteDriver$major") {
+        isCanBeConsumed = false
+        isTransitive = false
+    }
+    dependencies.add(driver.name, "org.xerial:sqlite-jdbc:$driverVersion")
+
+    val testTask = tasks.register<Test>("testSqlite$major") {
+        group = "verification"
+        description = "Runs the tests against sqlite-jdbc $driverVersion, the driver Paper $minecraftVersion ships."
+        useJUnitPlatform()
+        testClassesDirs = sourceSets.test.get().output.classesDirs
+        classpath = driver + sourceSets.test.get().runtimeClasspath.filter { !it.name.startsWith("sqlite-jdbc-") }
+        systemProperty("simplefactions.expectedSqliteVersion", driverVersion.split(".").take(3).joinToString("."))
+    }
+    tasks.check { dependsOn(testTask) }
 }
 
 tasks {
