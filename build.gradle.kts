@@ -156,3 +156,8 @@ tasks {
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
 }
+tasks.register("verify") {
+    group = "verification"
+    description = "Runs every test: the unit tests (also on old servers' SQLite versions) and the server tests (-Pmatrix=smoke unless set)."
+    dependsOn(tasks.check, ":integration-tests:runner:integrationTest")
+}

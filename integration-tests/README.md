@@ -16,9 +16,24 @@ Everything runs locally in Docker; nothing is installed on your PC except Docker
 
 Windows uses `gradlew.bat`, macOS and Linux `./gradlew`.
 
+**One command for everything**, from the project root:
+
 ```
-gradlew integrationTest                                  # every server in servers.csv
-gradlew integrationTest -Pservers=paper                  # only Paper servers
+gradlew verify                      # unit tests + smoke servers: a few minutes, while you code
+gradlew verify -Pmatrix=default     # unit tests + one server per Java era per server type
+gradlew verify -Pmatrix=full        # unit tests + every server in servers.csv: before a release
+```
+
+`verify` runs the unit tests first (also against the SQLite versions old servers ship) and only
+starts servers when they pass. The last column of `servers.csv` says which run size includes
+each server.
+
+Only the server tests:
+
+```
+gradlew integrationTest                                  # the default run size
+gradlew integrationTest -Pmatrix=full                    # every server in servers.csv
+gradlew integrationTest -Pservers=paper                  # only Paper servers (any run size)
 gradlew integrationTest -Pservers=1.21.4                 # every server type on 1.21.4
 gradlew integrationTest -Pservers=paper-1.17.1,folia     # one server plus all Folia servers
 gradlew integrationTest -Pparallel=4                     # four servers at a time
@@ -32,7 +47,12 @@ that is cached in `integration-tests/.cache`, so later runs only start the serve
 ## Reading the results
 
 - The console shows each server as it starts and finishes, then every test result.
-- The HTML report groups the results per server (for example `paper-1.21.4`):
+- **The compatibility report** has every test as a row and every server as a column, with
+  ✓, ✗ or – (skipped) in each cell. Hover a ✗ for the failure, a server for its exact version
+  and Java version; click a server for its log:
+  `integration-tests/runner/build/reports/compatibility/index.html`
+  (and `compatibility.md` next to it, for pasting into a pull request or issue)
+- The Gradle test report groups the results per server (for example `paper-1.21.4`):
   `integration-tests/runner/build/reports/tests/integrationTest/index.html`
 - Each server's full log: `integration-tests/runner/build/server-logs/<server>.log`, plus
   `<server>-restart.log` and `<server>-incompatible-db.log` for the later boots

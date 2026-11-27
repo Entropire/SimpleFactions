@@ -28,7 +28,7 @@ import org.junit.jupiter.api.TestFactory;
  */
 class AllServersTest {
 
-    private static final String SERVER_STARTS = "server starts and runs the test harness";
+    static final String SERVER_STARTS = "server starts and runs the test harness";
     private static final String PLUGIN_LOADS = "plugin loads and enables";
 
     @TestFactory
@@ -36,11 +36,13 @@ class AllServersTest {
         Settings settings = Settings.fromSystemProperties();
         Docker.requireAvailable();
 
-        List<ServerTarget> targets = ServerTarget.load(settings.serversFile(), settings.serverFilter());
+        List<ServerTarget> targets = ServerTarget.load(settings.serversFile(), settings.serverFilter(), settings.matrix());
         if (targets.isEmpty()) {
-            fail("No servers in " + settings.serversFile() + " match -Pservers=" + settings.serverFilter());
+            fail("No servers in " + settings.serversFile() + " match -Pmatrix=" + settings.matrix()
+                    + " -Pservers=" + settings.serverFilter());
         }
-        System.out.println("Testing on " + targets.size() + " servers, " + settings.parallel() + " at a time.");
+        System.out.println("Testing on " + targets.size() + " servers (-Pmatrix=" + settings.matrix() + "), "
+                + settings.parallel() + " at a time.");
 
         Path pluginsDir = stagePlugins(settings);
         BuildToolsCache buildTools = new BuildToolsCache(settings.cacheDir(), settings.logsDir());
@@ -51,9 +53,20 @@ class AllServersTest {
                 .toList();
         pool.shutdown();
 
-        return Stream.iterate(0, i -> i < targets.size(), i -> i + 1)
+        Stream<DynamicNode> servers = Stream.iterate(0, i -> i < targets.size(), i -> i + 1)
                 .map(i -> dynamicContainer(targets.get(i).id(),
                         Stream.of(outcomes.get(i)).flatMap(future -> testsFor(await(future)))));
+        Stream<DynamicNode> report = Stream.of(dynamicTest("compatibility report", () -> writeReport(settings, outcomes)));
+        return Stream.concat(servers, report);
+    }
+
+    private static void writeReport(Settings settings, List<Future<Outcome>> outcomes) throws Exception {
+        CompatibilityReport report = new CompatibilityReport(outcomes.stream().map(AllServersTest::await).toList());
+        Path folder = settings.logsDir().getParent().resolve("reports").resolve("compatibility");
+        List<Path> files = report.write(folder);
+        System.out.println("Compatibility report: " + files.get(0).toUri());
+        List<String> failing = report.failingServers();
+        System.out.println(failing.isEmpty() ? "All servers passed." : "Servers with failures: " + String.join(", ", failing));
     }
 
     private static Stream<DynamicNode> testsFor(Outcome outcome) {

@@ -9,10 +9,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-/** One line of servers.csv: a server type, Minecraft version and Java version. */
-record ServerTarget(String type, String version, int java) {
+/** One line of servers.csv: a server type, Minecraft version, Java version and run size. */
+record ServerTarget(String type, String version, int java, String size) {
 
     private static final Set<String> TYPES = Set.of("paper", "purpur", "folia", "spigot", "craftbukkit");
+    static final List<String> SIZES = List.of("smoke", "default", "full");
 
     String id() {
         return type + "-" + version;
@@ -42,7 +43,15 @@ record ServerTarget(String type, String version, int java) {
                         || entry.equalsIgnoreCase(id()));
     }
 
-    static List<ServerTarget> load(Path csv, String filter) throws IOException {
+    boolean inMatrix(String matrix) {
+        return SIZES.indexOf(size) <= SIZES.indexOf(matrix);
+    }
+
+    static List<ServerTarget> load(Path csv, String filter, String matrix) throws IOException {
+        if (!SIZES.contains(matrix)) {
+            throw new IllegalArgumentException("Unknown -Pmatrix=" + matrix + ", expected one of " + SIZES);
+        }
+
         List<ServerTarget> targets = new ArrayList<>();
         int lineNumber = 0;
 
@@ -52,9 +61,9 @@ record ServerTarget(String type, String version, int java) {
             if (trimmed.isEmpty() || trimmed.startsWith("#")) continue;
 
             String[] parts = trimmed.split("\\s*,\\s*");
-            if (parts.length != 3) {
+            if (parts.length != 4) {
                 throw new IllegalArgumentException(csv.getFileName() + " line " + lineNumber
-                        + ": expected 'type, version, java' but got: " + line);
+                        + ": expected 'type, version, java, size' but got: " + line);
             }
 
             String type = parts[0].toLowerCase(Locale.ROOT);
@@ -63,8 +72,14 @@ record ServerTarget(String type, String version, int java) {
                         + ": unknown server type '" + parts[0] + "', expected one of " + TYPES);
             }
 
-            ServerTarget target = new ServerTarget(type, parts[1], Integer.parseInt(parts[2]));
-            if (target.matches(filter)) targets.add(target);
+            String size = parts[3].toLowerCase(Locale.ROOT);
+            if (!SIZES.contains(size)) {
+                throw new IllegalArgumentException(csv.getFileName() + " line " + lineNumber
+                        + ": unknown size '" + parts[3] + "', expected one of " + SIZES);
+            }
+
+            ServerTarget target = new ServerTarget(type, parts[1], Integer.parseInt(parts[2]), size);
+            if (target.inMatrix(matrix) && target.matches(filter)) targets.add(target);
         }
         return targets;
     }

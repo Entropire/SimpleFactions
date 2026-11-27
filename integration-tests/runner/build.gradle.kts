@@ -24,8 +24,9 @@ tasks.test {
 }
 
 val integrationTest by tasks.registering(Test::class) {
-    description = "Starts every server in servers.csv in Docker and runs the in-server tests on each."
+    description = "Starts the servers in servers.csv (-Pmatrix=smoke|default|full) in Docker and runs the in-server tests on each."
     group = "verification"
+    mustRunAfter(":check")
 
     testClassesDirs = sourceSets.test.get().output.classesDirs
     classpath = sourceSets.test.get().runtimeClasspath
@@ -34,6 +35,14 @@ val integrationTest by tasks.registering(Test::class) {
     val pluginJar = rootProject.tasks.named<Jar>("jar").flatMap { it.archiveFile }
     val harnessJar = project(":integration-tests:harness").tasks.named<Jar>("jar").flatMap { it.archiveFile }
     val servers = providers.gradleProperty("servers").orElse("")
+    val runsVerify = gradle.startParameter.taskNames.any { it == "verify" || it.endsWith(":verify") }
+    val matrix = providers.gradleProperty("matrix").orElse(servers.map { filter ->
+        when {
+            runsVerify -> "smoke"
+            filter.isNotBlank() -> "full"
+            else -> "default"
+        }
+    })
     val parallel = providers.gradleProperty("parallel").orElse("2")
     val timeoutMinutes = providers.gradleProperty("startupTimeoutMinutes").orElse("20")
     val cacheDir = layout.projectDirectory.dir("../.cache").asFile.canonicalPath
@@ -49,6 +58,7 @@ val integrationTest by tasks.registering(Test::class) {
             "-Dsf.pluginJar=${pluginJar.get().asFile.absolutePath}",
             "-Dsf.harnessJar=${harnessJar.get().asFile.absolutePath}",
             "-Dsf.servers=${servers.get()}",
+            "-Dsf.matrix=${matrix.get()}",
             "-Dsf.parallel=${parallel.get()}",
             "-Dsf.startupTimeoutMinutes=${timeoutMinutes.get()}",
             "-Dsf.cacheDir=$cacheDir",

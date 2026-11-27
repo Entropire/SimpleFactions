@@ -143,17 +143,21 @@ three times with the same data folder and passes the phase in `SF_TEST_PHASE`:
 there too, so the DB lock and any accidental `Bukkit.getScheduler()` use show up as failures
 on Folia only.
 
-## 3. The runner: one run, one answer
+## 3. The runner: one run, one answer (done in step 7)
 
-- **Tiers** in `servers.csv` (4th column): `smoke` (Paper oldest + newest, Spigot newest,
-  Folia newest: ~4 servers, a few minutes), `default` (one per minor version per type),
-  `full` (everything). `-Pmatrix=smoke|default|full`, `-Pservers=` stays as a filter.
-- **Compatibility matrix report** written at the end to
-  `integration-tests/runner/build/reports/compat-matrix.html` (and `.md`): rows are tests,
-  columns are servers, cells are pass/fail/skip with a link to the server log. This is the
-  "do I know everything works" page.
+- **Run sizes** in `servers.csv` (4th column, the smallest run that includes the server):
+  - `smoke` (4): Paper 1.17.1, Paper 26.3, Spigot 26.3, Folia 26.3
+  - `default` (23): per server type 1.17.1 (Java 16), 1.20.4 (last on Java 17), 1.20.6
+    (first on Java 21), 1.21.11 and 26.3; Folia 1.19.4, 1.21.11 and 26.3
+  - `full` (51): everything
+  `-Pmatrix=smoke|default|full` picks one; `-Pservers=` filters on top of it (and runs any
+  size when given without `-Pmatrix`).
+- **Compatibility report** written at the end to
+  `integration-tests/runner/build/reports/compatibility/index.html` (and `compatibility.md`):
+  rows are tests, columns are servers, cells are ✓/✗/– with the failure on hover and a link to
+  the server log. This is the "do I know everything works" page.
 - **One entry point** in the root build:
-  - `gradlew verify` → `test` + `testSqlite*` + `integrationTest -Pmatrix=smoke`
+  - `gradlew verify` → `check` (`test` + `testSqlite*`), then `integrationTest -Pmatrix=smoke`
   - `gradlew verify -Pmatrix=full` → before a release
 
 ## 4. Order of work
@@ -166,7 +170,7 @@ on Folia only.
 | 4 | L3 command tests (`TestPlayer`, `TestCommands`, `Bukkit.getPlayer` faked with `mockStatic`) | What must not happen in every command is covered |
 | 5 | `FakePlayer` + split harness into suites; player feature suites (done) | Every feature on every server |
 | 6 | Multi-boot phases: persistence + safe mode (done) | Upgrade/restart behaviour on every server |
-| 7 | Tiers, `verify` task, compatibility matrix report | One command, one report |
+| 7 | Run sizes, `verify` task, compatibility report (done) | One command, one report |
 | 8 | (optional) GitHub Actions: L1–L3 + smoke on PRs, full matrix nightly/before release, cache `.cache/` | Regressions caught without remembering to run |
 
 ### Full automation: making "green" mean "works"

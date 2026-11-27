@@ -11,6 +11,7 @@ record Settings(
         Path cacheDir,
         Path logsDir,
         String serverFilter,
+        String matrix,
         int parallel,
         Duration startupTimeout) {
 
@@ -22,6 +23,7 @@ record Settings(
                 Path.of(required("sf.cacheDir")),
                 Path.of(required("sf.logsDir")),
                 System.getProperty("sf.servers", ""),
+                System.getProperty("sf.matrix", "default"),
                 Math.max(1, Integer.parseInt(System.getProperty("sf.parallel", "2"))),
                 Duration.ofMinutes(Long.parseLong(System.getProperty("sf.startupTimeoutMinutes", "20"))));
     }
