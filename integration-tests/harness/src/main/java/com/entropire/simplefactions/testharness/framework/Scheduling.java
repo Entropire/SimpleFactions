@@ -1,4 +1,4 @@
-package com.entropire.simplefactions.testharness;
+package com.entropire.simplefactions.testharness.framework;
 
 import java.util.function.Consumer;
 
@@ -11,11 +11,11 @@ import org.bukkit.plugin.Plugin;
  * the task goes to the global region scheduler. That API only exists on Paper/Folia, and the
  * harness is compiled against the Spigot 1.17 API, so it's called through reflection.
  */
-final class Scheduling {
+public final class Scheduling {
 
     private Scheduling() {}
 
-    static boolean isFolia() {
+    public static boolean isFolia() {
         try {
             Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
             return true;
@@ -24,7 +24,7 @@ final class Scheduling {
         }
     }
 
-    static void runLater(Plugin plugin, Runnable task, long delayTicks) {
+    public static void runLater(Plugin plugin, Runnable task, long delayTicks) {
         if (!isFolia()) {
             Bukkit.getScheduler().runTaskLater(plugin, task, delayTicks);
             return;

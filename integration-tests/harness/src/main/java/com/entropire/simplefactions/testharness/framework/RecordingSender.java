@@ -1,4 +1,4 @@
-package com.entropire.simplefactions.testharness;
+package com.entropire.simplefactions.testharness.framework;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -18,21 +18,21 @@ import org.bukkit.command.CommandSender;
  * methods, for example). A proxy implements whatever the running server's interface has.
  * It's not a {@code Player}, so it behaves like a non-player sender such as the console.
  */
-final class RecordingSender implements InvocationHandler {
+public final class RecordingSender implements InvocationHandler {
 
     private final List<String> messages = Collections.synchronizedList(new ArrayList<>());
     private final CommandSender sender = (CommandSender) Proxy.newProxyInstance(
             CommandSender.class.getClassLoader(), new Class<?>[] {CommandSender.class}, this);
 
-    CommandSender sender() {
+    public CommandSender sender() {
         return sender;
     }
 
-    List<String> messages() {
+    public List<String> messages() {
         return new ArrayList<>(messages);
     }
 
-    String allText() {
+    public String allText() {
         return String.join("\n", messages());
     }
 

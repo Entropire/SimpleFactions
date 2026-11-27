@@ -12,6 +12,17 @@ import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.entropire.simplefactions.testharness.framework.Scheduling;
+import com.entropire.simplefactions.testharness.framework.Suite;
+import com.entropire.simplefactions.testharness.framework.TestResult;
+import com.entropire.simplefactions.testharness.framework.TestRunner;
+import com.entropire.simplefactions.testharness.suites.CommandRegistrationSuite;
+import com.entropire.simplefactions.testharness.suites.FactionLifecycleSuite;
+import com.entropire.simplefactions.testharness.suites.HelpSuite;
+import com.entropire.simplefactions.testharness.suites.MembershipSuite;
+import com.entropire.simplefactions.testharness.suites.PlayerTrackingSuite;
+import com.entropire.simplefactions.testharness.suites.PluginLifecycleSuite;
+
 /**
  * Runs the in-server tests shortly after the server has fully started, writes the results
  * to {@value #RESULTS_FILE} in this plugin's data folder and then stops the server.
@@ -23,6 +34,13 @@ public final class TestHarnessPlugin extends JavaPlugin {
 
     static final String RESULTS_FILE = "sf-test-results.tsv";
     private static final long START_DELAY_TICKS = 40L;
+    private static final List<Suite> SUITES = List.of(
+            new PluginLifecycleSuite(),
+            new CommandRegistrationSuite(),
+            new HelpSuite(),
+            new PlayerTrackingSuite(),
+            new FactionLifecycleSuite(),
+            new MembershipSuite());
 
     @Override
     public void onEnable() {
@@ -31,7 +49,7 @@ public final class TestHarnessPlugin extends JavaPlugin {
     }
 
     private void runTestsAndReport() {
-        List<TestResult> results = new InServerTests().runAll();
+        List<TestResult> results = new TestRunner().run(describeEnvironment(), PluginLifecycleSuite.PLUGIN_LOADS, SUITES);
 
         for (TestResult result : results) {
             getLogger().info("[SF-TEST] " + result.status() + "  " + result.name()
@@ -70,6 +88,13 @@ public final class TestHarnessPlugin extends JavaPlugin {
         } catch (AtomicMoveNotSupportedException e) {
             Files.move(temp, target, StandardCopyOption.REPLACE_EXISTING);
         }
+    }
+
+    private static String describeEnvironment() {
+        return Bukkit.getName() + " " + Bukkit.getVersion()
+                + " (API " + Bukkit.getBukkitVersion() + ")"
+                + ", Java " + System.getProperty("java.version")
+                + (Scheduling.isFolia() ? ", Folia threading" : "");
     }
 
     private static String firstLine(String text) {

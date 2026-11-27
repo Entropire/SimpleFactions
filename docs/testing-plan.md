@@ -107,24 +107,25 @@ Limits: it isn't in `Bukkit.getOnlinePlayers()` / `Bukkit.getPlayer()`, so "noti
 member" is covered in L3 by faking `Bukkit.getPlayer`. Fake players can't click GUIs or send real
 chat packets; see section 5.
 
-**Harness layout.** Split `InServerTests` into feature suites with a small registry:
+**Harness layout** (done in step 5):
 
 ```
 harness/src/main/java/.../testharness/
-  TestHarnessPlugin.java      runs suites, writes results (unchanged contract)
-  framework/                  TestRegistry, Check, TestResult, FakePlayer, RecordingSender, Scheduling
+  TestHarnessPlugin.java      runs the suites, writes results (unchanged contract)
+  framework/                  TestRunner, Suite, TestCase, Check, TestResult, FakePlayer, Events,
+                              SimpleFactionsPlugin (commands, fake players, database), RecordingSender, Scheduling
   suites/
-    PluginLifecycleSuite      loads + enables, DB file, plugin.yml (folia-supported, api-version)
-    CommandRegistrationSuite  /faction + alias, executor, tab completer, console rejections
-    FactionLifecycleSuite     create → list → owner → members → delete, as fake players
-    MembershipSuite           kick, leave, owner-can't-leave, tab completion of members
-    PlayerTrackingSuite       fire PlayerJoinEvent / PlayerQuitEvent with fake players, check DB
-    HelpAndChatSuite          /f help, /f <sub> help, component formatting reaches the sender
-    SafeModeSuite             (second boot, see below)
+    PluginLifecycleSuite      plugin loads + enables (the gate), DB file
+    CommandRegistrationSuite  /faction + alias, executor, console rejection, tab completion
+    HelpSuite                 /f help, /f create help
+    PlayerTrackingSuite       PlayerJoinEvent / PlayerQuitEvent with fake players, checks the DB
+    FactionLifecycleSuite     create → list → owner → members → delete → create again, completion
+    MembershipSuite           kick, kick completion, leave, members order
+    SafeModeSuite             (second boot, step 6)
 ```
 
-Each suite declares what it needs (`requires(PLUGIN_LOADS)`), so one root failure gives one
-FAIL and clear SKIPs, as today. Tests isolate themselves with unique names and UUIDs
+The gate test ("plugin loads and enables") runs first. If it fails, every suite is skipped,
+so one root failure gives one FAIL and clear SKIPs. Tests isolate themselves with unique names and UUIDs
 instead of wiping the DB between tests.
 
 **Scenarios that need more than one boot.** The runner starts the same server a second time
@@ -163,7 +164,7 @@ on Folia only.
 | 2 | `TestDatabase` + `Given` fixtures; L2 service tests for all three services | Every business rule tested in ms |
 | 3 | L1 tests (`FactionName`, `CommandNode`, chat components) | Logic outside the DB covered |
 | 4 | L3 command tests (`TestPlayer`, `TestCommands`, `Bukkit.getPlayer` faked with `mockStatic`) | What must not happen in every command is covered |
-| 5 | `FakePlayer` + split harness into suites; player feature suites | Every feature on every server |
+| 5 | `FakePlayer` + split harness into suites; player feature suites (done) | Every feature on every server |
 | 6 | Multi-boot phases: persistence + safe mode | Upgrade/restart behaviour on every server |
 | 7 | Tiers, `verify` task, compatibility matrix report | One command, one report |
 | 8 | (optional) GitHub Actions: L1–L3 + smoke on PRs, full matrix nightly/before release, cache `.cache/` | Regressions caught without remembering to run |

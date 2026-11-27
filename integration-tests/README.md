@@ -49,10 +49,25 @@ Every server reports:
 
 ## Adding tests
 
-The tests live in
-`harness/src/main/java/com/entropire/simplefactions/testharness/InServerTests.java`.
-Add a method that throws on failure (use `Check.that(...)`) and register it in `runAll()`.
-They run on the server thread, inside a real server, so they can use the real Bukkit API.
+The tests live in `harness/src/main/java/com/entropire/simplefactions/testharness/`:
+
+- `suites/`: one class per feature (`FactionLifecycleSuite`, `MembershipSuite`, ...). These are
+  the **happy-path flow tests**; what must not be possible is tested in the plugin's own unit
+  tests in `src/test`.
+- `framework/`: the runner and the helpers the suites use:
+  - `SimpleFactionsPlugin.joinedPlayer("Alice")` makes a `FakePlayer` and fires a real
+    `PlayerJoinEvent` for it, so the plugin registers the player.
+  - `SimpleFactionsPlugin.run(alice, "create red")` runs `/f create red` as that player;
+    `alice.allText()` is everything the player was sent.
+  - `factionOf(player)`, `addMember(faction, player)`, `query(...)` and `execute(...)` read and
+    write the plugin's database directly, for checks and for setup the commands can't do yet.
+  - `Check.contains(...)`, `Check.equal(...)` and friends fail the test with a clear message.
+
+To add a test, add a method to a suite and list it in its `tests()`. For a new feature, add a
+new suite and register it in `SUITES` in `TestHarnessPlugin`. Give factions and players unique
+names (`uniqueFactionName("red")`, `joinedPlayer` does this itself), because all tests share one
+server and one database. The tests run on the server thread, inside a real server, so they can
+use the real Bukkit API.
 
 Keep in mind that the harness is compiled against the **Spigot 1.17.1 API** on purpose, so
 it works on every server in the list. Paper-only APIs need reflection (see `Scheduling` and
@@ -81,9 +96,9 @@ docker run -it --rm -p 25565:25565 -e EULA=TRUE -e TYPE=PAPER -e VERSION=1.21.4 
 
 ## What these tests don't cover yet
 
-- **Real players.** All tests use the console or a fake non-player sender. Anything that needs a
-  player (creating a faction, kicking a member, join/quit events) needs a bot client such as
-  Mineflayer that joins the server. Bot clients often lag behind new Minecraft versions, so
-  check that one supports 26.x before relying on it.
+- **Real players.** Fake players run commands and fire join/quit events, but they never connect.
+  They aren't in `Bukkit.getPlayer(...)`, so "notify an online member" is covered by the unit
+  tests instead. GUIs, real chat and anything packet-based need a bot client such as Mineflayer.
+  Bot clients often lag behind new Minecraft versions, so check that one supports 26.x first.
 - **Folia's region threads.** On Folia the tests run on the global region thread. Commands typed
   by a player run on that player's region thread, which only bot-based tests can exercise.

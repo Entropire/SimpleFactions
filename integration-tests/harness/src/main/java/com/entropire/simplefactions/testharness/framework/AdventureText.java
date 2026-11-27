@@ -1,4 +1,4 @@
-package com.entropire.simplefactions.testharness;
+package com.entropire.simplefactions.testharness.framework;
 
 import java.lang.reflect.Method;
 
@@ -6,11 +6,11 @@ import java.lang.reflect.Method;
  * Turns an Adventure Component into plain text. Adventure only exists on Paper and its forks,
  * and the harness is compiled against the Spigot API, so this goes through reflection.
  */
-final class AdventureText {
+public final class AdventureText {
 
     private AdventureText() {}
 
-    static String plain(Object component) {
+    public static String plain(Object component) {
         try {
             ClassLoader loader = component.getClass().getClassLoader();
             Class<?> serializerType = Class.forName(
