@@ -1,5 +1,6 @@
 package com.entropire.simplefactions.faction.membership;
 
+import com.entropire.simplefactions.database.SqlLike;
 import com.entropire.simplefactions.objects.Pageable;
 import com.entropire.simplefactions.objects.Result;
 
@@ -91,9 +92,9 @@ public class FactionMembershipRepository {
     }
 
     public Result<List<String>> getFactionMemberNames(Connection connection, Pageable<String> pageable, UUID factionUuid, String contains) {
-        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT p.username FROM faction_memberships m JOIN players p ON p.uuid = m.player_uuid WHERE m.faction_uuid = ? AND p.username LIKE ? || '%' ORDER BY p.username LIMIT ? OFFSET ?")) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT p.username FROM faction_memberships m JOIN players p ON p.uuid = m.player_uuid WHERE m.faction_uuid = ? AND p.username LIKE ? ESCAPE '\\' ORDER BY p.username LIMIT ? OFFSET ?")) {
             preparedStatement.setString(1, factionUuid.toString());
-            preparedStatement.setString(2, contains);
+            preparedStatement.setString(2, SqlLike.startsWith(contains));
             preparedStatement.setInt(3, pageable.itemsPerPage());
             preparedStatement.setInt(4, pageable.currentPage() * pageable.itemsPerPage());
 

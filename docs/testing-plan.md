@@ -59,13 +59,20 @@ Shared fixtures in `src/test/.../testsupport/`:
 - `TestDatabase`: makes a fresh `DataBaseContext` with the schema, one per test.
 - `Given`: small builders, e.g. `given.player("Alice")`, `given.faction("Red").ownedBy(alice).withMembers(bob)`.
 
+**Rule: small tests (L1–L3) test what must not be possible; the L4 flow tests are the happy
+paths.** No "creates a faction" or "accepts valid names" tests in L1–L3: the `Given` setup
+already runs the real create/join code in every test, and L4 tests every flow end to end.
+This is a soft rule. The exception is a hidden side effect a player can't see, such as a
+deleted faction not leaving invites or join requests behind. Those get a small test,
+written as "does not ...".
+
 One test class per service, one test per rule:
 
 | Class | Cases |
 |---|---|
-| `FactionServiceTest` | create: success, name taken (any case), invalid name, already in a faction · delete: owner only, returns member UUIDs, removes memberships/invites/requests · list/paging · owner lookup by name and by player · members by name and by player |
-| `FactionMembershipServiceTest` | leave: member ok, owner can't leave, no faction · kick: owner only, can't kick self, target not in your faction, unknown name · member-name completion |
-| `FactionPlayerServiceTest` | first join registers, rename updates username, leave updates last seen |
+| `FactionServiceTest` | create rejects: empty/invalid names, invalid colors, taken names, players already in a faction · delete: only the owner, not without a faction, doesn't touch other factions, doesn't leave invites/join requests behind · pages that don't exist show the nearest page · completion doesn't treat `_` as a wildcard · owner/members reject unknown factions and players without one, don't list other factions' members |
+| `FactionMembershipServiceTest` | leave: owner can't, not without a faction · kick: only the owner, not yourself, not other factions' members or owners, unknown names, not without a faction · completion doesn't suggest other factions' members or treat `_` as a wildcard |
+| `FactionPlayerServiceTest` | rejoining doesn't create a second player or reset chat mode · leaving without joining creates nothing · same names aren't merged |
 | Existing `DataBaseContextTest`, `DataBaseConcurrencyTest`, `SqliteCompatibilityTest` | Keep; move shared setup into `TestDatabase` |
 
 Every L2 test also runs against the older SQLite drivers through the existing
@@ -178,8 +185,14 @@ Known limits even when everything is green: interaction with other plugins (opti
 run with LuckPerms/EssentialsX installed) and hybrid servers stay "expected to work".
 
 **Rule for new features** (add to the project board's definition of done): a feature isn't
-done until it has L2 tests for its rules, an L3 test per command branch, and a happy-path
-L4 test in the matching suite.
+done until it has L2/L3 tests for everything that must not be possible, and an L4 flow test
+where it works. Every feature must be in at least one L4 flow test: the small tests only
+expect a "no", so a feature that always says "no" would pass them.
+
+Happy paths the L4 flow tests must cover (moved out of the small tests): create, delete
+(members end up without a faction), kick and leave, list and pages, owner and members
+(owner first, then alphabetical), name completion, and join/quit updating the player's
+name and last seen.
 
 ## 5. Not covered by this plan (on purpose)
 

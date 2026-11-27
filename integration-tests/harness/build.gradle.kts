@@ -15,8 +15,6 @@ dependencies {
 }
 
 java {
-    // Same as SimpleFactions itself: Java 16 bytecode runs on every server from 1.17.1
-    // (on Java 16) up to 26.x.
     toolchain.languageVersion = JavaLanguageVersion.of(16)
 }
 

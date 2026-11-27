@@ -9,13 +9,6 @@
 # This list tests the newest patch of each minor version, plus the oldest patch of minor
 # versions where the API changed a lot. Add or remove lines freely. Run a subset with
 # -Pservers=..., see integration-tests/README.md.
-#
-# Versions checked on 2026-11-27 against the download APIs:
-#   Paper/Folia: https://fill.papermc.io/v3/projects/<paper|folia>
-#   Purpur:      https://api.purpurmc.org/v2/purpur
-#   Spigot:      https://hub.spigotmc.org/versions/
-# Purpur and Folia have no 26.1.1 build, so 26.1 is tested as 26.1.2 everywhere.
-# Folia has no builds before 1.19.4 and only some versions after that.
 
 paper,       1.17.1,  16
 paper,       1.18.2,  17

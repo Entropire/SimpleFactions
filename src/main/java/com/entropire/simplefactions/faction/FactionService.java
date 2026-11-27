@@ -32,6 +32,7 @@ public class FactionService {
         Result<FactionName> factionNameResult = FactionName.parse(rawName);
         if (!(factionNameResult instanceof Result.Success<FactionName> factionNameSuccess)) return factionNameResult.propagate();
         FactionName factionName = factionNameSuccess.value();
+        if (color == null || !color.matches("^#[a-fA-F0-9]{6}$")) return new Result.Failure<>("A faction color must be a hex color like #ff0000.");
 
         return db.transaction(conn -> {
             Result<Optional<FactionMembership>> existingResult = membershipRepository.findByPlayerUuid(conn, ownerUuid);

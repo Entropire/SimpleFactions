@@ -55,7 +55,6 @@ final class RecordingSender implements InvocationHandler {
         return defaultValue(method.getReturnType());
     }
 
-    /** Created on first use, see {@link SpigotRecorder} for why it's a separate class. */
     private Object spigot;
 
     private synchronized Object spigot() {

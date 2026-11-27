@@ -36,7 +36,6 @@ val integrationTest by tasks.registering(Test::class) {
     val servers = providers.gradleProperty("servers").orElse("")
     val parallel = providers.gradleProperty("parallel").orElse("2")
     val timeoutMinutes = providers.gradleProperty("startupTimeoutMinutes").orElse("20")
-    // integration-tests/.cache (next to runner/ and harness/), as the README and .gitignore expect.
     val cacheDir = layout.projectDirectory.dir("../.cache").asFile.canonicalPath
     val serversFile = layout.projectDirectory.file("servers.csv").asFile.absolutePath
     val logsDir = layout.buildDirectory.dir("server-logs").get().asFile.absolutePath

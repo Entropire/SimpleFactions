@@ -1,5 +1,6 @@
 package com.entropire.simplefactions.faction;
 
+import com.entropire.simplefactions.database.SqlLike;
 import com.entropire.simplefactions.objects.Pageable;
 import com.entropire.simplefactions.objects.Result;
 import com.entropire.simplefactions.player.ChatMode;
@@ -107,8 +108,8 @@ public class FactionRepository {
     }
 
     public Result<List<String>> getFactionNames(Connection connection, Pageable<String> pageable, String contains){
-        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT name FROM factions WHERE name LIKE ? || '%' LIMIT ? OFFSET ?")) {
-            preparedStatement.setString(1, contains);
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT name FROM factions WHERE name LIKE ? ESCAPE '\\' LIMIT ? OFFSET ?")) {
+            preparedStatement.setString(1, SqlLike.startsWith(contains));
             preparedStatement.setInt(2, pageable.itemsPerPage());
             preparedStatement.setInt(3, pageable.currentPage() * pageable.itemsPerPage());
 
