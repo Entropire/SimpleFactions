@@ -6,6 +6,10 @@ import java.util.List;
 /** One line of the harness' results file, see TestResult in the harness plugin. */
 record HarnessResult(String status, String name, long millis, String detail) {
 
+    HarnessResult withName(String newName) {
+        return new HarnessResult(status, newName, millis, detail);
+    }
+
     static List<HarnessResult> parse(List<String> lines) {
         List<HarnessResult> results = new ArrayList<>();
         for (String line : lines) {

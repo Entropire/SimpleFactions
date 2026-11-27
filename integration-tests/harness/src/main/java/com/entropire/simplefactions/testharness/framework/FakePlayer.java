@@ -30,6 +30,10 @@ public final class FakePlayer implements InvocationHandler {
                 Player.class.getClassLoader(), new Class<?>[] {Player.class}, this);
     }
 
+    public static FakePlayer existing(UUID uuid, String name) {
+        return new FakePlayer(uuid, name);
+    }
+
     public FakePlayer withName(String newName) {
         return new FakePlayer(uuid, newName);
     }

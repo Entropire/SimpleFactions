@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 
 /**
  * A fake {@link CommandSender} that records every message sent to it.
@@ -21,8 +22,19 @@ import org.bukkit.command.CommandSender;
 public final class RecordingSender implements InvocationHandler {
 
     private final List<String> messages = Collections.synchronizedList(new ArrayList<>());
-    private final CommandSender sender = (CommandSender) Proxy.newProxyInstance(
-            CommandSender.class.getClassLoader(), new Class<?>[] {CommandSender.class}, this);
+    private final CommandSender sender;
+
+    public RecordingSender() {
+        this(CommandSender.class);
+    }
+
+    private RecordingSender(Class<? extends CommandSender> type) {
+        this.sender = (CommandSender) Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] {type}, this);
+    }
+
+    public static RecordingSender console() {
+        return new RecordingSender(ConsoleCommandSender.class);
+    }
 
     public CommandSender sender() {
         return sender;

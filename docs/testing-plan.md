@@ -128,16 +128,16 @@ The gate test ("plugin loads and enables") runs first. If it fails, every suite 
 so one root failure gives one FAIL and clear SKIPs. Tests isolate themselves with unique names and UUIDs
 instead of wiping the DB between tests.
 
-**Scenarios that need more than one boot.** The runner starts the same server a second time
-with the same data folder:
-- *Persistence:* boot 1 creates factions, boot 2 checks they're still there and the schema
-  check says Ready.
-- *Safe mode:* the runner puts an incompatible `Simple-Faction.db` in place before boot;
-  the harness checks the plugin enters safe mode, `/f` explains it, and
-  `f database reset confirm` brings it back to working.
-
-Add `phase` (`fresh`, `restart`, `incompatible-db`) to the harness via an environment
-variable; the runner runs the phases in order per server.
+**Scenarios that need more than one boot** (done in step 6). The runner starts every server
+three times with the same data folder and passes the phase in `SF_TEST_PHASE`:
+- *fresh:* all feature suites, then `RestartPreparationSuite` saves a faction with a member
+  (`PhaseData`).
+- *restart:* `PersistenceSuite` checks the faction, members and players are still there and a
+  new faction can be created, then marks the database as made by SimpleFactions 99.0 with
+  schema version 999.
+- *incompatible-db:* `SafeModeSuite` checks players are told the plugin is disabled and
+  nothing changes, the server log explains the options, and `f database reset confirm` from
+  the console makes a backup and brings the plugin back.
 
 **Folia.** The harness already runs on the global region thread. Run every command suite
 there too, so the DB lock and any accidental `Bukkit.getScheduler()` use show up as failures
@@ -165,7 +165,7 @@ on Folia only.
 | 3 | L1 tests (`FactionName`, `CommandNode`, chat components) | Logic outside the DB covered |
 | 4 | L3 command tests (`TestPlayer`, `TestCommands`, `Bukkit.getPlayer` faked with `mockStatic`) | What must not happen in every command is covered |
 | 5 | `FakePlayer` + split harness into suites; player feature suites (done) | Every feature on every server |
-| 6 | Multi-boot phases: persistence + safe mode | Upgrade/restart behaviour on every server |
+| 6 | Multi-boot phases: persistence + safe mode (done) | Upgrade/restart behaviour on every server |
 | 7 | Tiers, `verify` task, compatibility matrix report | One command, one report |
 | 8 | (optional) GitHub Actions: L1–L3 + smoke on PRs, full matrix nightly/before release, cache `.cache/` | Regressions caught without remembering to run |
 

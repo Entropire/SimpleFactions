@@ -34,8 +34,18 @@ that is cached in `integration-tests/.cache`, so later runs only start the serve
 - The console shows each server as it starts and finishes, then every test result.
 - The HTML report groups the results per server (for example `paper-1.21.4`):
   `integration-tests/runner/build/reports/tests/integrationTest/index.html`
-- Each server's full log: `integration-tests/runner/build/server-logs/<server>.log`
+- Each server's full log: `integration-tests/runner/build/server-logs/<server>.log`, plus
+  `<server>-restart.log` and `<server>-incompatible-db.log` for the later boots
 - BuildTools logs: `integration-tests/runner/build/server-logs/buildtools-<version>.log`
+
+Every server is started three times, keeping its data between the boots:
+
+1. **fresh**: all feature tests, then a faction with a member is saved for the next boot.
+2. **restart** (results start with "after a restart:"): checks the faction, members and
+   players are still there, then marks the database as made by a newer SimpleFactions.
+3. **incompatible-db** (results start with "with an incompatible database:"): checks the
+   plugin starts in safe mode, the log explains the options, and `f database reset confirm`
+   from the console brings it back.
 
 Every server reports:
 
@@ -64,7 +74,8 @@ The tests live in `harness/src/main/java/com/entropire/simplefactions/testharnes
   - `Check.contains(...)`, `Check.equal(...)` and friends fail the test with a clear message.
 
 To add a test, add a method to a suite and list it in its `tests()`. For a new feature, add a
-new suite and register it in `SUITES` in `TestHarnessPlugin`. Give factions and players unique
+new suite and register it for its phase in `SUITES_PER_PHASE` in `TestHarnessPlugin`. To pass
+data to the next boot, use `PhaseData.save(...)` and `PhaseData.load()`. Give factions and players unique
 names (`uniqueFactionName("red")`, `joinedPlayer` does this itself), because all tests share one
 server and one database. The tests run on the server thread, inside a real server, so they can
 use the real Bukkit API.

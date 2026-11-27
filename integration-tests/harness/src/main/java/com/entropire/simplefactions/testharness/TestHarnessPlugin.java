@@ -7,11 +7,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.entropire.simplefactions.testharness.framework.PhaseData;
 import com.entropire.simplefactions.testharness.framework.Scheduling;
 import com.entropire.simplefactions.testharness.framework.Suite;
 import com.entropire.simplefactions.testharness.framework.TestResult;
@@ -20,8 +22,11 @@ import com.entropire.simplefactions.testharness.suites.CommandRegistrationSuite;
 import com.entropire.simplefactions.testharness.suites.FactionLifecycleSuite;
 import com.entropire.simplefactions.testharness.suites.HelpSuite;
 import com.entropire.simplefactions.testharness.suites.MembershipSuite;
+import com.entropire.simplefactions.testharness.suites.PersistenceSuite;
 import com.entropire.simplefactions.testharness.suites.PlayerTrackingSuite;
 import com.entropire.simplefactions.testharness.suites.PluginLifecycleSuite;
+import com.entropire.simplefactions.testharness.suites.RestartPreparationSuite;
+import com.entropire.simplefactions.testharness.suites.SafeModeSuite;
 
 /**
  * Runs the in-server tests shortly after the server has fully started, writes the results
@@ -34,13 +39,17 @@ public final class TestHarnessPlugin extends JavaPlugin {
 
     static final String RESULTS_FILE = "sf-test-results.tsv";
     private static final long START_DELAY_TICKS = 40L;
-    private static final List<Suite> SUITES = List.of(
-            new PluginLifecycleSuite(),
-            new CommandRegistrationSuite(),
-            new HelpSuite(),
-            new PlayerTrackingSuite(),
-            new FactionLifecycleSuite(),
-            new MembershipSuite());
+    private static final Map<String, List<Suite>> SUITES_PER_PHASE = Map.of(
+            PhaseData.FRESH, List.of(
+                    new PluginLifecycleSuite(),
+                    new CommandRegistrationSuite(),
+                    new HelpSuite(),
+                    new PlayerTrackingSuite(),
+                    new FactionLifecycleSuite(),
+                    new MembershipSuite(),
+                    new RestartPreparationSuite()),
+            PhaseData.RESTART, List.of(new PersistenceSuite()),
+            PhaseData.INCOMPATIBLE_DB, List.of(new SafeModeSuite()));
 
     @Override
     public void onEnable() {
@@ -49,7 +58,10 @@ public final class TestHarnessPlugin extends JavaPlugin {
     }
 
     private void runTestsAndReport() {
-        List<TestResult> results = new TestRunner().run(describeEnvironment(), PluginLifecycleSuite.PLUGIN_LOADS, SUITES);
+        String phase = PhaseData.currentPhase();
+        List<Suite> suites = SUITES_PER_PHASE.getOrDefault(phase, List.of());
+        List<TestResult> results = new TestRunner().run(describeEnvironment(), PluginLifecycleSuite.PLUGIN_LOADS, suites);
+        if (suites.isEmpty()) results.add(TestResult.fail("known test phase", 0, "Unknown SF_TEST_PHASE '" + phase + "'"));
 
         for (TestResult result : results) {
             getLogger().info("[SF-TEST] " + result.status() + "  " + result.name()

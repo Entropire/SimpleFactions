@@ -14,8 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 /**
- * Starts one server in Docker (itzg/minecraft-server), waits for the harness' results and
- * removes the container again.
+ * Starts one server in Docker (itzg/minecraft-server) once per {@link Phase}, waits for the
+ * harness' results each time and removes the container again.
  *
  * <p>The server's /data folder is kept in .cache/servers/&lt;id&gt; between runs, so the server
  * jar, Mojang's files and libraries are only downloaded once. Worlds, logs and plugins are
@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 final class ServerRun {
 
     static final String RESULTS_FILE = "plugins/SimpleFactionsTestHarness/sf-test-results.tsv";
+    static final String SERVER_RESTARTS = "server restarts and runs the test harness";
     /** How long the harness gets to report after the server logged "Done". */
     private static final Duration HARNESS_GRACE = Duration.ofMinutes(2);
     private static final List<String> FOLDERS_TO_CLEAN =
@@ -39,21 +40,55 @@ final class ServerRun {
     private ServerRun() {}
 
     static Outcome run(ServerTarget target, Settings settings, Path pluginsDir, BuildToolsCache buildTools) {
-        Path logFile = settings.logsDir().resolve(target.id() + ".log").toAbsolutePath();
-        String container = "sf-it-" + target.id();
+        Path logFile = logFile(settings, target, Phase.FRESH);
         Instant start = Instant.now();
         System.out.println("[" + target.id() + "] starting");
 
         try {
-            Outcome outcome = runServer(target, settings, pluginsDir, buildTools, container, logFile);
-            System.out.println("[" + target.id() + "] " + (outcome.error() == null ? "finished" : "FAILED")
-                    + " after " + Duration.between(start, Instant.now()).toSeconds() + "s");
-            return outcome;
+            Path dataDir = settings.cacheDir().resolve("servers").resolve(target.id()).toAbsolutePath();
+            prepareDataDir(dataDir);
+
+            List<HarnessResult> results = new ArrayList<>();
+            for (Phase phase : Phase.values()) {
+                Outcome outcome = runPhase(target, settings, pluginsDir, buildTools, dataDir, phase);
+
+                if (outcome.error() != null) {
+                    if (phase == Phase.FRESH) return finish(target, start, outcome);
+                    results.add(new HarnessResult("FAIL", phase.label + SERVER_RESTARTS, 0, outcome.error()));
+                    break;
+                }
+                if (phase != Phase.FRESH) results.add(new HarnessResult("PASS", phase.label + SERVER_RESTARTS, 0, ""));
+                for (HarnessResult result : outcome.results()) {
+                    if (phase != Phase.FRESH && result.status().equals("INFO")) continue;
+                    results.add(phase == Phase.FRESH ? result : result.withName(phase.label + result.name()));
+                }
+            }
+            return finish(target, start, Outcome.finished(target, results, logFile));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return Outcome.failed(target, "Interrupted", logFile);
         } catch (Exception e) {
             return Outcome.failed(target, "Could not run the server: " + e, logFile);
+        }
+    }
+
+    private static Outcome finish(ServerTarget target, Instant start, Outcome outcome) {
+        System.out.println("[" + target.id() + "] " + (outcome.error() == null ? "finished" : "FAILED")
+                + " after " + Duration.between(start, Instant.now()).toSeconds() + "s");
+        return outcome;
+    }
+
+    private static Outcome runPhase(ServerTarget target, Settings settings, Path pluginsDir,
+            BuildToolsCache buildTools, Path dataDir, Phase phase) throws IOException, InterruptedException {
+
+        String container = "sf-it-" + target.id();
+        Path logFile = logFile(settings, target, phase);
+        Files.deleteIfExists(dataDir.resolve(RESULTS_FILE));
+        Files.deleteIfExists(dataDir.resolve("logs/latest.log"));
+        if (phase != Phase.FRESH) System.out.println("[" + target.id() + "] " + phase.id);
+
+        try {
+            return runServer(target, settings, pluginsDir, buildTools, container, dataDir, phase, logFile);
         } finally {
             saveLogs(container, logFile);
             Docker.removeQuietly(container);
@@ -61,11 +96,8 @@ final class ServerRun {
         }
     }
 
-    private static Outcome runServer(ServerTarget target, Settings settings, Path pluginsDir,
-            BuildToolsCache buildTools, String container, Path logFile) throws IOException, InterruptedException {
-
-        Path dataDir = settings.cacheDir().resolve("servers").resolve(target.id()).toAbsolutePath();
-        prepareDataDir(dataDir);
+    private static Outcome runServer(ServerTarget target, Settings settings, Path pluginsDir, BuildToolsCache buildTools,
+            String container, Path dataDir, Phase phase, Path logFile) throws IOException, InterruptedException {
 
         List<String> args = new ArrayList<>(List.of(
                 "run", "-d", "--name", container,
@@ -79,7 +111,8 @@ final class ServerRun {
                 "-e", "VIEW_DISTANCE=3",
                 "-e", "SIMULATION_DISTANCE=3",
                 "-e", "SPAWN_PROTECTION=0",
-                "-e", "GENERATE_STRUCTURES=false"));
+                "-e", "GENERATE_STRUCTURES=false",
+                "-e", "SF_TEST_PHASE=" + phase.id));
         args.addAll(Docker.hostUserArgs());
 
         if (target.needsBuildTools()) {
@@ -131,6 +164,11 @@ final class ServerRun {
         }
 
         return Outcome.finished(target, HarnessResult.parse(Files.readAllLines(results, StandardCharsets.UTF_8)), logFile);
+    }
+
+    private static Path logFile(Settings settings, ServerTarget target, Phase phase) {
+        String suffix = phase == Phase.FRESH ? "" : "-" + phase.id;
+        return settings.logsDir().resolve(target.id() + suffix + ".log").toAbsolutePath();
     }
 
     private static Outcome failure(ServerTarget target, String message, Path logFile, String container) {
