@@ -80,16 +80,14 @@ Every L2 test also runs against the older SQLite drivers through the existing
 
 ### L3 – Command tests in the JVM
 
-Commands run with Mockito `Player` mocks wired to real services on a temp SQLite DB. A
-`FakeChat` helper captures both `sendMessage(String)` and `spigot().sendMessage(BaseComponent)`
-as plain text. Covers each command's branches and messages: create, delete, kick, leave,
-list, members, owner, help, tab completion per argument, and `DatabaseResetCommand`
-(safe mode, `reset`, `reset confirm`).
-
-`Bukkit.getPlayer(...)` (used by delete and kick to notify online members) is static, so
-either wrap it in a small `OnlinePlayers` interface that the commands receive, or leave the
-"notify online member" check to L4. Recommendation: the interface, it keeps commands
-testable without a server.
+Commands run through `TestCommands` with `TestPlayer`s (Mockito `Player` mocks that record
+both `sendMessage(String)` and `spigot().sendMessage(BaseComponent)` as plain text), wired to
+real services on a temp SQLite DB. `Bukkit.getPlayer(...)`, used by delete and kick to notify
+online members, is faked with Mockito's `mockStatic` while a command runs, so the plugin code
+needs no changes for testing. Covers what must not happen in each command: console use,
+missing arguments, refused actions not notifying anyone, `/f delete help` not deleting,
+invalid pages, tab completion, and `DatabaseResetCommand` (players can't reset, no reset
+without `confirm`).
 
 ### L4 – In-server tests on every server (existing harness, restructured)
 
@@ -106,7 +104,7 @@ check(alice.lastMessage()).contains("Created faction Red");
 ```
 
 Limits: it isn't in `Bukkit.getOnlinePlayers()` / `Bukkit.getPlayer()`, so "notify online
-member" is covered in L3 through `OnlinePlayers`. Fake players can't click GUIs or send real
+member" is covered in L3 by faking `Bukkit.getPlayer`. Fake players can't click GUIs or send real
 chat packets; see section 5.
 
 **Harness layout.** Split `InServerTests` into feature suites with a small registry:
@@ -164,7 +162,7 @@ on Folia only.
 | 1 | Fix `RecordingSender.spigot()`, harness on Java 16, add `java16` row, confirm versions in `servers.csv` | Current harness green; baseline full run |
 | 2 | `TestDatabase` + `Given` fixtures; L2 service tests for all three services | Every business rule tested in ms |
 | 3 | L1 tests (`FactionName`, `CommandNode`, chat components) | Logic outside the DB covered |
-| 4 | `OnlinePlayers` seam + L3 command tests | Every command branch and message covered |
+| 4 | L3 command tests (`TestPlayer`, `TestCommands`, `Bukkit.getPlayer` faked with `mockStatic`) | What must not happen in every command is covered |
 | 5 | `FakePlayer` + split harness into suites; player feature suites | Every feature on every server |
 | 6 | Multi-boot phases: persistence + safe mode | Upgrade/restart behaviour on every server |
 | 7 | Tiers, `verify` task, compatibility matrix report | One command, one report |
