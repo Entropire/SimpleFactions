@@ -1,6 +1,6 @@
 package com.entropire.simplefactions.database;
 
-public sealed interface SchemaStatus {
+public interface SchemaStatus {
 
     record Ready() implements SchemaStatus {}
 

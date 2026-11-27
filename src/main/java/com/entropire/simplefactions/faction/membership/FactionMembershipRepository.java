@@ -74,16 +74,20 @@ public class FactionMembershipRepository {
     }
 
     public Result<Optional<FactionMembership>> deleteByPlayerUuid(Connection connection, UUID playerUuid) {
-        try (PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM faction_memberships WHERE player_uuid = ? RETURNING *")) {
-            preparedStatement.setString(1, playerUuid.toString());
+        Result<Optional<FactionMembership>> existingResult = findByPlayerUuid(connection, playerUuid);
+        if (!(existingResult instanceof Result.Success<Optional<FactionMembership>> existingSuccess)) return existingResult;
+        Optional<FactionMembership> existing = existingSuccess.value();
+        if (existing.isEmpty()) return existingResult;
 
-            try (ResultSet rs = preparedStatement.executeQuery()) {
-                return new Result.Success<>(rs.next() ? Optional.of(map(rs)) : Optional.empty());
-            }
+        try (PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM faction_memberships WHERE player_uuid = ?")) {
+            preparedStatement.setString(1, playerUuid.toString());
+            preparedStatement.executeUpdate();
         }
         catch (SQLException e) {
             return new Result.Error<>("Failed to delete faction membership", e);
         }
+
+        return new Result.Success<>(existing);
     }
 
     public Result<List<String>> getFactionMemberNames(Connection connection, Pageable<String> pageable, UUID factionUuid, String contains) {

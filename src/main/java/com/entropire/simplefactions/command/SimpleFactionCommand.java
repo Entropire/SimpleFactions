@@ -4,8 +4,6 @@ import java.util.List;
 
 import com.entropire.simplefactions.chat.ChatMessage;
 import com.entropire.simplefactions.command.sub.*;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.command.CommandSender;
 
 import com.entropire.simplefactions.faction.FactionService;
@@ -40,7 +38,7 @@ public class SimpleFactionCommand extends CommandNode {
     public ChatMessage help(String[] args) {
         List<CommandNode> children = getChildren();
         int maxPage = Math.max(1, (children.size() + HELP_PAGE_SIZE - 1) / HELP_PAGE_SIZE);
-        int page = Math.clamp(parsePage(args) - 1, 0, maxPage - 1);
+        int page = Math.max(0, Math.min(parsePage(args) - 1, maxPage - 1));
 
         int from = page * HELP_PAGE_SIZE;
         int to = Math.min(from + HELP_PAGE_SIZE, children.size());

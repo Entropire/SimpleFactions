@@ -16,12 +16,17 @@ import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class DataBaseContext {
 
     public static final int SCHEMA_VERSION = 1;
 
+    private static final int BUSY_TIMEOUT_MILLIS = 5000;
+
     private final String path;
+
+    private final ReentrantLock lock = new ReentrantLock(true);
 
     public DataBaseContext(String path) {
         this.path = path;
@@ -32,14 +37,18 @@ public class DataBaseContext {
     }
 
     public <T> Result<T> withConnection(SQLAction<T> action) {
+        lock.lock();
         try (Connection conn = openConnection()) {
             return action.execute(conn);
         } catch (Exception e) {
             return new Result.Error<>("Database operation failed", e);
+        } finally {
+            lock.unlock();
         }
     }
 
     public <T> Result<T> transaction(SQLAction<T> action) {
+        lock.lock();
         try (Connection conn = openConnection()) {
             conn.setAutoCommit(false);
             try {
@@ -53,6 +62,8 @@ public class DataBaseContext {
             }
         } catch (Exception e) {
             return new Result.Error<>("Database operation failed", e);
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -61,6 +72,7 @@ public class DataBaseContext {
 
         try (Statement stmt = conn.createStatement()) {
             stmt.execute("PRAGMA foreign_keys = ON");
+            stmt.execute("PRAGMA busy_timeout = " + BUSY_TIMEOUT_MILLIS);
         }
 
         return conn;
@@ -102,11 +114,15 @@ public class DataBaseContext {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
         Path backup = database.resolveSibling(database.getFileName() + ".backup-" + timestamp);
 
+        // Hold the lock so the file isn't moved while another thread has it open.
+        lock.lock();
         try {
             Files.move(database, backup);
             return new Result.Success<>(backup);
         } catch (IOException e) {
             return new Result.Error<>("Could not move " + database + " to " + backup, e);
+        } finally {
+            lock.unlock();
         }
     }
 

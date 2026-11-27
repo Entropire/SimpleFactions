@@ -31,20 +31,19 @@ public class DeleteCommand extends CommandNode{
             return false;
         }
         
-        switch (factionService.deleteFaction(player.getUniqueId())) {
-            case Result.Success<List<UUID>>(List<UUID> memberUuids) -> {
-                player.sendMessage("You have deleted your faction.");
-                for (UUID uuid : memberUuids) {
-                    if (uuid.equals(player.getUniqueId())) continue;
-                    Player member = Bukkit.getPlayer(uuid);
-                    if (member != null) member.sendMessage("Your faction has been deleted!");
-                }
+        Result<List<UUID>> result = factionService.deleteFaction(player.getUniqueId());
+        if (result instanceof Result.Success<List<UUID>> success) {
+            player.sendMessage("You have deleted your faction.");
+            for (UUID uuid : success.value()) {
+                if (uuid.equals(player.getUniqueId())) continue;
+                Player member = Bukkit.getPlayer(uuid);
+                if (member != null) member.sendMessage("Your faction has been deleted!");
             }
-            case Result.Failure<List<UUID>>(String message) -> player.sendMessage(message);
-            case Result.Error<List<UUID>>(String message, Exception e) -> {
-                SimpleFactions.getPluginLogger().log(Level.SEVERE, message, e);
-                player.sendMessage("Something went wrong while deleting your faction.");
-            }
+        } else if (result instanceof Result.Failure<List<UUID>> failure) {
+            player.sendMessage(failure.message());
+        } else if (result instanceof Result.Error<List<UUID>> error) {
+            SimpleFactions.getPluginLogger().log(Level.SEVERE, error.message(), error.exception());
+            player.sendMessage("Something went wrong while deleting your faction.");
         }
         return true;
     }

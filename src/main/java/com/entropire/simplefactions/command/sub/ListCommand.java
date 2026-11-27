@@ -14,8 +14,6 @@ import com.entropire.simplefactions.objects.Pageable;
 import com.entropire.simplefactions.objects.Result;
 import com.entropire.simplefactions.SimpleFactions;
 
-import net.kyori.adventure.text.format.TextColor;
-
 public class ListCommand extends CommandNode {
 
     private final FactionService factionService;
@@ -36,24 +34,22 @@ public class ListCommand extends CommandNode {
         int pageRequest;
         try{
             pageRequest = Integer.parseInt(args[0]);
-        }catch (Exception _){
+        }catch (Exception e){
             pageRequest = 0;
         }
         int page = args.length == 0 ? 0 : Math.max(0, pageRequest - 1);
 
-        Pageable<Faction> factionsPage;
-        switch (factionService.getFactions(new Pageable<>(page, 10))) {
-            case Result.Success<Pageable<Faction>>(Pageable<Faction> value) -> factionsPage = value;
-            case Result.Failure<Pageable<Faction>>(String message) -> {
-                player.sendMessage(message);
-                return true;
-            }
-            case Result.Error<Pageable<Faction>>(String message, Exception e) -> {
-                SimpleFactions.getPluginLogger().log(Level.SEVERE, message, e);
+        Result<Pageable<Faction>> result = factionService.getFactions(new Pageable<>(page, 10));
+        if (!(result instanceof Result.Success<Pageable<Faction>> success)) {
+            if (result instanceof Result.Failure<Pageable<Faction>> failure) {
+                player.sendMessage(failure.message());
+            } else if (result instanceof Result.Error<Pageable<Faction>> error) {
+                SimpleFactions.getPluginLogger().log(Level.SEVERE, error.message(), error.exception());
                 player.sendMessage("Something went wrong while retrieving the list of factions.");
-                return true;
             }
+            return true;
         }
+        Pageable<Faction> factionsPage = success.value();
 
         ChatMessage message = new ChatMessage()
         .title(
@@ -64,11 +60,11 @@ public class ListCommand extends CommandNode {
                     factionsPage.maxPages()
                 )
         )
-        .textIf(factionsPage.maxPages() > 1, "Use /f list [n] to get page n of list").setColor(TextColor.color(0xFFD166))
+        .textIf(factionsPage.maxPages() > 1, "Use /f list [n] to get page n of list").setColor(0xFFD166)
         .list(factionsPage.items().stream().map(faction -> faction.name().value()).toArray(String[]::new))
         .title(null);
 
-        sender.sendMessage(message.build());
+        message.sendTo(sender);
         return true;
     }
 

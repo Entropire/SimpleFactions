@@ -1,6 +1,6 @@
 package com.entropire.simplefactions.chat;
 
-import net.kyori.adventure.text.Component;
+import net.md_5.bungee.api.chat.BaseComponent;
 
 public class TextComponent extends MessageComponent {
 
@@ -11,7 +11,9 @@ public class TextComponent extends MessageComponent {
     }
 
     @Override
-    public Component build() {
-        return Component.text(text, color);
+    public BaseComponent build() {
+        BaseComponent component = text(text, color);
+        if (bold) component.setBold(true);
+        return component;
     }
 }

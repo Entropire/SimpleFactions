@@ -35,12 +35,10 @@ public class PlayerJoinListener implements Listener {
     }
 
     private void logIfFailed(Result<?> result, String context) {
-        switch (result) {
-            case Result.Success<?> success -> {}
-            case Result.Failure<?>(String message) ->
-                    SimpleFactions.getPluginLogger().warning(context + ": " + message);
-            case Result.Error<?>(String message, Exception e) ->
-                    SimpleFactions.getPluginLogger().log(Level.SEVERE, context + ": " + message, e);
+        if (result instanceof Result.Failure<?> failure) {
+            SimpleFactions.getPluginLogger().warning(context + ": " + failure.message());
+        } else if (result instanceof Result.Error<?> error) {
+            SimpleFactions.getPluginLogger().log(Level.SEVERE, context + ": " + error.message(), error.exception());
         }
     }
 }

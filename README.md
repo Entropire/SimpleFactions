@@ -3,11 +3,11 @@
 
 [![Release v3.0.0](https://img.shields.io/badge/Release-v3.0.0-darkgreen?style=flat-square)](https://modrinth.com/plugin/simple-factions/version/3.0.0)
 [![Installs 2.5k](https://img.shields.io/badge/Installs-2.5k-brightgreen?style=flat-square)](https://modrinth.com/plugin/simple-factions)
-[![Minecraft 1.21.\*](https://img.shields.io/badge/Minecraft-1.21.*-orange?style=flat-square\&logo=minecraft)](https://minecraft.net/)
-[![Paper Server](https://img.shields.io/badge/Server-Paper-blue?style=flat-square\&logo=paper)](https://papermc.io/)
+[![Minecraft 1.17 - 26.3](https://img.shields.io/badge/Minecraft-1.17%20--%2026.3-orange?style=flat-square\&logo=minecraft)](https://minecraft.net/)
+[![Spigot and Paper Server](https://img.shields.io/badge/Server-Spigot%20%7C%20Paper-blue?style=flat-square)](#requirements)
 [![Join Discord](https://img.shields.io/badge/Discord-Join%20Server-5865F2?style=flat-square\&logo=discord)](https://discord.com/invite/AwA7mXV8qba)
 [![GPL 3.0 License](https://img.shields.io/badge/License-GPL_3.0-blue?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0)
-[![Java 21](https://img.shields.io/badge/Java-21-red?style=flat-square)](https://adoptium.net/)
+[![Java 16+](https://img.shields.io/badge/Java-16%2B-red?style=flat-square)](https://adoptium.net/)
 [![Last Update](https://img.shields.io/github/last-commit/Entropire/SimpleFactions?style=flat-square)](https://github.com/Entropire/SimpleFactions/commits/Master/)
 
 </div>
@@ -42,9 +42,23 @@ It's designed to be lightweight and accessible for both players and server owner
 * **Developer API:** A simple and flexible API for building integrations and custom features.
 * **Lightweight:** Focuses on the essentials without unnecessary complexity.
 
+<h2 id="requirements">📋 Requirements</h2>
+
+* **Minecraft:** 1.17 up to and including 26.3.
+* **Java:** whatever your Minecraft version needs (16 for 1.17, 17 for 1.18 - 1.20.4, 21 for 1.20.5 - 1.21, 25 for 26.1 and newer).
+
+| Server software                                                  | Support                                                                                          |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Spigot, CraftBukkit                                              | Supported                                                                                        |
+| Paper and Paper forks (Purpur, Pufferfish, ...)                  | Supported                                                                                        |
+| Folia (1.19.4 and newer)                                         | Supported                                                                                        |
+| Hybrid servers (Mohist, Arclight, ...)                           | Soft-supported: expected to work but not tested. [Open an issue](https://github.com/Entropire/SimpleFactions/issues) if something doesn't work. |
+| Networks behind a proxy (Velocity, BungeeCord)                   | Per-server factions: install Simple Factions on each backend server, not on the proxy. Every server has its own factions; network-wide factions shared between servers are not supported. |
+| Fabric, NeoForge, Sponge                                         | Not supported                                                                                    |
+
 <h2 id="installation">🚀 Installation</h2>
 
-1. Create a **Paper** server if you don't already have one: [PaperMC Getting Started](https://docs.papermc.io/paper/getting-started/)
+1. Create a **Spigot** or **Paper** server if you don't already have one: [Spigot BuildTools](https://www.spigotmc.org/wiki/buildtools/) or [PaperMC Getting Started](https://docs.papermc.io/paper/getting-started/)
 2. Download the latest version of **Simple Factions** from [Modrinth](https://modrinth.com/plugin/simple-factions/versions).
 3. Place the downloaded `.jar` file into your server's `plugins` folder.
 4. Start or restart your server.

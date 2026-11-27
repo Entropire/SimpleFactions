@@ -3,9 +3,7 @@ package com.entropire.simplefactions.objects;
 import java.util.Objects;
 import java.util.Optional;
 
-public sealed interface Result<T>
-        permits Result.Success, Result.Failure, Result.Error {
-
+public interface Result<T> {
     record Success<T>(T value) implements Result<T> {
         public Success {
             Objects.requireNonNull(value, "Success value cannot be null");
@@ -29,8 +27,8 @@ public sealed interface Result<T>
     }
 
     static <T> Result<T> require(Result<Optional<T>> result, String messageIfMissing) {
-        if (!(result instanceof Success<Optional<T>>(Optional<T> value))) return result.propagate();
+        if (!(result instanceof Success<Optional<T>> success)) return result.propagate();
 
-        return value.<Result<T>>map(Success::new).orElseGet(() -> new Failure<>(messageIfMissing));
+        return success.value().<Result<T>>map(Success::new).orElseGet(() -> new Failure<>(messageIfMissing));
     }
 }

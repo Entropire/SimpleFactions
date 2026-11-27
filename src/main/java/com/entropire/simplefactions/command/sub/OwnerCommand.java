@@ -35,13 +35,13 @@ public class OwnerCommand extends CommandNode {
                 ? factionService.getPlayerFactionOwner(player.getUniqueId())
                 : factionService.getFactionOwner(args[0]);
 
-        switch (result) {
-            case Result.Success<FactionPlayer>(FactionPlayer owner) -> player.sendMessage(owner.username());
-            case Result.Failure<FactionPlayer>(String message) -> player.sendMessage(message);
-            case Result.Error<FactionPlayer>(String message, Exception e) -> {
-                SimpleFactions.getPluginLogger().log(Level.SEVERE, message, e);
-                player.sendMessage("Something went wrong while retrieving the owner of the faction.");
-            }
+        if (result instanceof Result.Success<FactionPlayer> success) {
+            player.sendMessage(success.value().username());
+        } else if (result instanceof Result.Failure<FactionPlayer> failure) {
+            player.sendMessage(failure.message());
+        } else if (result instanceof Result.Error<FactionPlayer> error) {
+            SimpleFactions.getPluginLogger().log(Level.SEVERE, error.message(), error.exception());
+            player.sendMessage("Something went wrong while retrieving the owner of the faction.");
         }
         return true;
     }
@@ -50,14 +50,12 @@ public class OwnerCommand extends CommandNode {
     public List<String> tabComplete(CommandSender sender, String[] args) {
         if (args.length != 1 || args[0].isEmpty()) return List.of();
 
-        return switch (factionService.getFactionNames(new Pageable<>(0, 20), args[0])) {
-            case Result.Success<Pageable<String>>(Pageable<String> factionNames) -> factionNames.items();
-            case Result.Failure<Pageable<String>> _ -> List.of();
-            case Result.Error<Pageable<String>>(String message, Exception e) -> {
-                SimpleFactions.getPluginLogger().log(Level.SEVERE, message, e);
-                yield List.of();
-            }
-        };
+        Result<Pageable<String>> result = factionService.getFactionNames(new Pageable<>(0, 20), args[0]);
+        if (result instanceof Result.Success<Pageable<String>> success) return success.value().items();
+        if (result instanceof Result.Error<Pageable<String>> error) {
+            SimpleFactions.getPluginLogger().log(Level.SEVERE, error.message(), error.exception());
+        }
+        return List.of();
     }
 
     @Override

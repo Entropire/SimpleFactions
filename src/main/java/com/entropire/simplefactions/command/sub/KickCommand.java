@@ -32,23 +32,22 @@ public class KickCommand extends CommandNode {
         }
 
         if (args.length == 0) {
-            player.sendMessage(help(args).build());
+            help(args).sendTo(player);
             return true;
         }
 
         String memberName = args[0];
 
-        switch (membershipService.kickFactionMember(player.getUniqueId(), memberName)) {
-            case Result.Success<FactionMembership>(FactionMembership kicked) -> {
-                player.sendMessage("You have kicked " + memberName + " from your faction.");
-                Player member = Bukkit.getPlayer(kicked.playerUuid());
-                if (member != null) member.sendMessage("You have been kicked from your faction.");
-            }
-            case Result.Failure<FactionMembership>(String message) -> player.sendMessage(message);
-            case Result.Error<FactionMembership>(String message, Exception e) -> {
-                SimpleFactions.getPluginLogger().log(Level.SEVERE, message, e);
-                player.sendMessage("Something went wrong while kicking " + memberName + " from your faction.");
-            }
+        Result<FactionMembership> result = membershipService.kickFactionMember(player.getUniqueId(), memberName);
+        if (result instanceof Result.Success<FactionMembership> success) {
+            player.sendMessage("You have kicked " + memberName + " from your faction.");
+            Player member = Bukkit.getPlayer(success.value().playerUuid());
+            if (member != null) member.sendMessage("You have been kicked from your faction.");
+        } else if (result instanceof Result.Failure<FactionMembership> failure) {
+            player.sendMessage(failure.message());
+        } else if (result instanceof Result.Error<FactionMembership> error) {
+            SimpleFactions.getPluginLogger().log(Level.SEVERE, error.message(), error.exception());
+            player.sendMessage("Something went wrong while kicking " + memberName + " from your faction.");
         }
 
         return true;
@@ -59,16 +58,16 @@ public class KickCommand extends CommandNode {
         if (!(sender instanceof Player player)) return List.of();
         if (args.length != 1) return List.of();
 
-        return switch (membershipService.getFactionMemberNames(new Pageable<>(0, 20), player.getUniqueId(), args[0])) {
-            case Result.Success<Pageable<String>>(Pageable<String> memberNames) -> memberNames.items().stream()
+        Result<Pageable<String>> result = membershipService.getFactionMemberNames(new Pageable<>(0, 20), player.getUniqueId(), args[0]);
+        if (result instanceof Result.Success<Pageable<String>> success) {
+            return success.value().items().stream()
                     .filter(name -> !name.equalsIgnoreCase(player.getName()))
                     .toList();
-            case Result.Failure<Pageable<String>> _ -> List.of();
-            case Result.Error<Pageable<String>>(String message, Exception e) -> {
-                SimpleFactions.getPluginLogger().log(Level.SEVERE, message, e);
-                yield List.of();
-            }
-        };
+        }
+        if (result instanceof Result.Error<Pageable<String>> error) {
+            SimpleFactions.getPluginLogger().log(Level.SEVERE, error.message(), error.exception());
+        }
+        return List.of();
     }
 
     @Override

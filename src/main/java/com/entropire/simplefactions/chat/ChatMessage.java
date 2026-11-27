@@ -1,7 +1,7 @@
 package com.entropire.simplefactions.chat;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
+import net.md_5.bungee.api.chat.BaseComponent;
+import org.bukkit.command.CommandSender;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,27 +30,32 @@ public class ChatMessage {
         return this;
     }
 
-    public Component build() {
-        Component message = Component.empty();
+    public BaseComponent build() {
+        BaseComponent message = MessageComponent.text("", null);
 
         for (int i = 0; i < components.size(); i++) {
-            message = message.append(components.get(i).build());
+            message.addExtra(components.get(i).build());
 
             if (i != components.size() - 1) {
-                message = message.append(Component.newline());
+                message.addExtra(MessageComponent.text("\n", null));
             }
         }
 
         return message;
     }
 
+    public void sendTo(CommandSender sender) {
+        sender.spigot().sendMessage(build());
+    }
+
     public ChatMessage setBold(boolean bold){
-        components.getLast().setBold(bold);
+        components.get(components.size() - 1).setBold(bold);
         return this;
     }
 
-    public ChatMessage setColor(TextColor color){
-        components.getLast().setColor(color);
+    /** Colors the last added component, for example {@code setColor(0xFFD166)}. */
+    public ChatMessage setColor(int rgb){
+        components.get(components.size() - 1).setColor(MessageComponent.rgb(rgb));
         return this;
     }
 

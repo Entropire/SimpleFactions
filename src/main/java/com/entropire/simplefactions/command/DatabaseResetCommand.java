@@ -58,34 +58,32 @@ public class DatabaseResetCommand implements CommandExecutor, TabCompleter {
     }
 
     private void reset(CommandSender sender) {
-        Path backup;
-        switch (db.resetDatabase()) {
-            case Result.Success<Path>(Path value) -> backup = value;
-            case Result.Failure<Path>(String message) -> {
-                sender.sendMessage("Could not reset the database: " + message);
-                return;
-            }
-            case Result.Error<Path>(String message, Exception e) -> {
-                SimpleFactions.getPluginLogger().log(Level.SEVERE, message, e);
+        Result<Path> resetResult = db.resetDatabase();
+        if (!(resetResult instanceof Result.Success<Path> resetSuccess)) {
+            if (resetResult instanceof Result.Failure<Path> failure) {
+                sender.sendMessage("Could not reset the database: " + failure.message());
+            } else if (resetResult instanceof Result.Error<Path> error) {
+                SimpleFactions.getPluginLogger().log(Level.SEVERE, error.message(), error.exception());
                 sender.sendMessage("Could not reset the database, see the server log for details.");
-                return;
             }
+            return;
         }
+        Path backup = resetSuccess.value();
 
-        switch (db.initSchema(pluginVersion)) {
-            case Result.Success<SchemaStatus>(SchemaStatus.Ready ready) -> {
+        Result<SchemaStatus> schemaResult = db.initSchema(pluginVersion);
+        if (schemaResult instanceof Result.Success<SchemaStatus> schemaSuccess) {
+            if (schemaSuccess.value() instanceof SchemaStatus.Incompatible) {
+                sender.sendMessage("The database was reset, but is still not compatible. This should not happen, please report it.");
+            } else {
                 onReady.run();
                 sender.sendMessage("Database reset. The old file was saved as " + backup.getFileName() + ".");
                 sender.sendMessage("SimpleFactions is enabled again.");
             }
-            case Result.Success<SchemaStatus>(SchemaStatus.Incompatible incompatible) ->
-                    sender.sendMessage("The database was reset, but is still not compatible. This should not happen, please report it.");
-            case Result.Failure<SchemaStatus>(String message) ->
-                    sender.sendMessage("The database was reset, but could not be set up: " + message);
-            case Result.Error<SchemaStatus>(String message, Exception e) -> {
-                SimpleFactions.getPluginLogger().log(Level.SEVERE, message, e);
-                sender.sendMessage("The database was reset, but could not be set up. See the server log for details.");
-            }
+        } else if (schemaResult instanceof Result.Failure<SchemaStatus> failure) {
+            sender.sendMessage("The database was reset, but could not be set up: " + failure.message());
+        } else if (schemaResult instanceof Result.Error<SchemaStatus> error) {
+            SimpleFactions.getPluginLogger().log(Level.SEVERE, error.message(), error.exception());
+            sender.sendMessage("The database was reset, but could not be set up. See the server log for details.");
         }
     }
 

@@ -29,13 +29,14 @@ public class LeaveCommand extends CommandNode {
             return true;
         }
 
-        switch (membershipService.leaveFaction(player.getUniqueId())) {
-            case Result.Success<FactionMembership>(FactionMembership _) -> player.sendMessage("You have left your faction.");
-            case Result.Failure<FactionMembership>(String message) -> player.sendMessage(message);
-            case Result.Error<FactionMembership>(String message, Exception e) -> {
-                SimpleFactions.getPluginLogger().log(Level.SEVERE, message, e);
-                player.sendMessage("Something went wrong while leaving your faction.");
-            }
+        Result<FactionMembership> result = membershipService.leaveFaction(player.getUniqueId());
+        if (result instanceof Result.Success<FactionMembership>) {
+            player.sendMessage("You have left your faction.");
+        } else if (result instanceof Result.Failure<FactionMembership> failure) {
+            player.sendMessage(failure.message());
+        } else if (result instanceof Result.Error<FactionMembership> error) {
+            SimpleFactions.getPluginLogger().log(Level.SEVERE, error.message(), error.exception());
+            player.sendMessage("Something went wrong while leaving your faction.");
         }
 
         return true;
