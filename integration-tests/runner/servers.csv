@@ -6,7 +6,7 @@
 #          16 for 1.17.x (the oldest Java SimpleFactions supports), 17 for 1.18 - 1.20.4,
 #          21 for 1.20.5 - 1.21.x, 25 for 26.x
 # size:    the smallest run that includes this server: smoke, default or full
-#          (-Pmatrix=smoke runs only smoke servers, default runs smoke + default, full runs all)
+#          (-Psize=smoke runs only smoke servers, default runs smoke + default, full runs all)
 #
 # This list tests the newest patch of each minor version, plus the oldest patch of minor
 # versions where the API changed a lot. Add or remove lines freely. Run a subset with

@@ -36,12 +36,12 @@ class AllServersTest {
         Settings settings = Settings.fromSystemProperties();
         Docker.requireAvailable();
 
-        List<ServerTarget> targets = ServerTarget.load(settings.serversFile(), settings.serverFilter(), settings.matrix());
+        List<ServerTarget> targets = ServerTarget.load(settings.serversFile(), settings.serverFilter(), settings.size());
         if (targets.isEmpty()) {
-            fail("No servers in " + settings.serversFile() + " match -Pmatrix=" + settings.matrix()
+            fail("No servers in " + settings.serversFile() + " match -Psize=" + settings.size()
                     + " -Pservers=" + settings.serverFilter());
         }
-        System.out.println("Testing on " + targets.size() + " servers (-Pmatrix=" + settings.matrix() + "), "
+        System.out.println("Testing on " + targets.size() + " servers (-Psize=" + settings.size() + "), "
                 + settings.parallel() + " at a time.");
 
         Path pluginsDir = stagePlugins(settings);

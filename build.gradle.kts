@@ -158,6 +158,6 @@ tasks.withType<JavaCompile>().configureEach {
 }
 tasks.register("verify") {
     group = "verification"
-    description = "Runs every test: the unit tests (also on old servers' SQLite versions) and the server tests (-Pmatrix=smoke unless set)."
+    description = "Runs every test: the unit tests (also on old servers' SQLite versions) and the server tests (-Psize=smoke unless set)."
     dependsOn(tasks.check, ":integration-tests:runner:integrationTest")
 }

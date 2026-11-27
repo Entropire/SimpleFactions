@@ -150,15 +150,15 @@ on Folia only.
   - `default` (23): per server type 1.17.1 (Java 16), 1.20.4 (last on Java 17), 1.20.6
     (first on Java 21), 1.21.11 and 26.3; Folia 1.19.4, 1.21.11 and 26.3
   - `full` (51): everything
-  `-Pmatrix=smoke|default|full` picks one; `-Pservers=` filters on top of it (and runs any
-  size when given without `-Pmatrix`).
+  `-Psize=smoke|default|full` picks one; `-Pservers=` filters on top of it (and runs any
+  size when given without `-Psize`).
 - **Compatibility report** written at the end to
   `integration-tests/runner/build/reports/compatibility/index.html` (and `compatibility.md`):
   rows are tests, columns are servers, cells are ✓/✗/– with the failure on hover and a link to
   the server log. This is the "do I know everything works" page.
 - **One entry point** in the root build:
-  - `gradlew verify` → `check` (`test` + `testSqlite*`), then `integrationTest -Pmatrix=smoke`
-  - `gradlew verify -Pmatrix=full` → before a release
+  - `gradlew verify` → `check` (`test` + `testSqlite*`), then `integrationTest -Psize=smoke`
+  - `gradlew verify -Psize=full` → before a release
 
 ## 4. Order of work
 
@@ -171,7 +171,7 @@ on Folia only.
 | 5 | `FakePlayer` + split harness into suites; player feature suites (done) | Every feature on every server |
 | 6 | Multi-boot phases: persistence + safe mode (done) | Upgrade/restart behaviour on every server |
 | 7 | Run sizes, `verify` task, compatibility report (done) | One command, one report |
-| 8 | (optional) GitHub Actions: L1–L3 + smoke on PRs, full matrix nightly/before release, cache `.cache/` | Regressions caught without remembering to run |
+| 8 | (optional) GitHub Actions: L1–L3 + smoke on PRs, full size nightly/before release, cache `.cache/` | Regressions caught without remembering to run |
 
 ### Full automation: making "green" mean "works"
 

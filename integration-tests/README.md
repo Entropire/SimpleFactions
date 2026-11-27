@@ -19,9 +19,9 @@ Windows uses `gradlew.bat`, macOS and Linux `./gradlew`.
 **One command for everything**, from the project root:
 
 ```
-gradlew verify                      # unit tests + smoke servers: a few minutes, while you code
-gradlew verify -Pmatrix=default     # unit tests + one server per Java era per server type
-gradlew verify -Pmatrix=full        # unit tests + every server in servers.csv: before a release
+gradlew verify                    # unit tests + smoke servers: a few minutes, while you code
+gradlew verify -Psize=default     # unit tests + one server per Java era per server type
+gradlew verify -Psize=full        # unit tests + every server in servers.csv: before a release
 ```
 
 `verify` runs the unit tests first (also against the SQLite versions old servers ship) and only
@@ -32,7 +32,7 @@ Only the server tests:
 
 ```
 gradlew integrationTest                                  # the default run size
-gradlew integrationTest -Pmatrix=full                    # every server in servers.csv
+gradlew integrationTest -Psize=full                      # every server in servers.csv
 gradlew integrationTest -Pservers=paper                  # only Paper servers (any run size)
 gradlew integrationTest -Pservers=1.21.4                 # every server type on 1.21.4
 gradlew integrationTest -Pservers=paper-1.17.1,folia     # one server plus all Folia servers

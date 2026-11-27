@@ -43,13 +43,13 @@ record ServerTarget(String type, String version, int java, String size) {
                         || entry.equalsIgnoreCase(id()));
     }
 
-    boolean inMatrix(String matrix) {
-        return SIZES.indexOf(size) <= SIZES.indexOf(matrix);
+    boolean includedIn(String runSize) {
+        return SIZES.indexOf(size) <= SIZES.indexOf(runSize);
     }
 
-    static List<ServerTarget> load(Path csv, String filter, String matrix) throws IOException {
-        if (!SIZES.contains(matrix)) {
-            throw new IllegalArgumentException("Unknown -Pmatrix=" + matrix + ", expected one of " + SIZES);
+    static List<ServerTarget> load(Path csv, String filter, String runSize) throws IOException {
+        if (!SIZES.contains(runSize)) {
+            throw new IllegalArgumentException("Unknown -Psize=" + runSize + ", expected one of " + SIZES);
         }
 
         List<ServerTarget> targets = new ArrayList<>();
@@ -79,7 +79,7 @@ record ServerTarget(String type, String version, int java, String size) {
             }
 
             ServerTarget target = new ServerTarget(type, parts[1], Integer.parseInt(parts[2]), size);
-            if (target.inMatrix(matrix) && target.matches(filter)) targets.add(target);
+            if (target.includedIn(runSize) && target.matches(filter)) targets.add(target);
         }
         return targets;
     }
