@@ -17,6 +17,7 @@ dependencies {
 
     implementation("org.xerial:sqlite-jdbc:3.50.3.0")
 
+    testImplementation("org.spigotmc:spigot-api:1.17.1-R0.1-SNAPSHOT")
     testImplementation(platform("org.junit:junit-bom:5.11.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

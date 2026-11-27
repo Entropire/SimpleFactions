@@ -20,7 +20,7 @@ public class TitleComponent extends MessageComponent {
             return text("─".repeat(CHAT_WIDTH / MinecraftFont.HORIZONTAL_LINE.getWidth()), rgb(0x888888));
         }
 
-        int remaining = (CHAT_WIDTH - FontHelper.width(title)) / MinecraftFont.HORIZONTAL_LINE.getWidth();
+        int remaining = Math.max(0, (CHAT_WIDTH - FontHelper.width(title)) / MinecraftFont.HORIZONTAL_LINE.getWidth());
         int left = remaining / 2;
         int right = remaining - left;
 
