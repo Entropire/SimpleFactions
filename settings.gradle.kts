@@ -3,3 +3,4 @@ plugins {
 }
 
 rootProject.name = "SimpleFactions"
+include(":integration-tests:harness", ":integration-tests:runner")

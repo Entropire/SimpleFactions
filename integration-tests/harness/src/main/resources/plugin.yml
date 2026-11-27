@@ -1,0 +1,9 @@
+name: SimpleFactionsTestHarness
+version: '1.0'
+main: com.entropire.simplefactions.testharness.TestHarnessPlugin
+description: Runs the SimpleFactions in-server tests. Never install this on a real server.
+api-version: '1.17'
+folia-supported: true
+# softdepend instead of depend: if SimpleFactions fails to load, the harness still loads
+# and reports that as a failed test, instead of the whole run timing out.
+softdepend: [SimpleFactions]
