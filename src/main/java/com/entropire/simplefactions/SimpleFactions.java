@@ -28,6 +28,14 @@ public final class SimpleFactions extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        try {
+            Class.forName("net.md_5.bungee.api.chat.BaseComponent");
+        } catch (ClassNotFoundException e) {
+            getLogger().severe("SimpleFactions requires Spigot, Paper or a fork of them. Plain CraftBukkit is not supported.");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+        
         logger = getLogger();
 
         if (!getDataFolder().exists()) getDataFolder().mkdir();
